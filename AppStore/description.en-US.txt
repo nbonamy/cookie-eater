@@ -1,0 +1,17 @@
+Fewer banners. More browsing.
+
+Cookie Eater handles cookie consent automatically in Safari on Mac. It rejects optional cookies when possible, works through supported settings and legitimate-interest choices, and accepts when no free refusal option is available. Ambiguous choices stay untouched.
+
+LOCAL BY DESIGN
+Familiar banners use bundled rules. When those cannot continue, Apple's on-device Foundation Models interpret the consent dialog in its language. Your browsing content and inference stay on your Mac. No account, telemetry, or cloud inference.
+
+YOU STAY IN CONTROL
+Pause Cookie Eater on any website, retry a banner, turn Apple Intelligence on or off, and review or clear recent activity from the Safari toolbar. Private-window activity is not saved.
+
+CLEAR OUTCOMES
+Cookie Eater distinguishes requested rejection, verified rejection, acceptance to continue, and banners that need your attention. A banner disappearing alone never counts as verified rejection.
+
+GET STARTED
+Open Cookie Eater, enable the extension in Safari Settings, and allow access to the websites you choose. It then runs automatically. You can quit the companion app.
+
+Requires macOS 14 or later. On-device AI requires macOS 26 or later, a supported Mac, and an available Apple Intelligence model. Bundled rules remain available without AI. Some websites and languages may require a manual choice.

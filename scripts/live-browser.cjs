@@ -20,7 +20,7 @@ function bridge(){
  const parsed=new URL(url);assert(['http:','https:'].includes(parsed.protocol));
  const c=await b.newContext({locale:parsed.hostname.endsWith('.de')?'de-DE':'it-IT'});
  const initial=await c.storageState();assert.equal(initial.cookies.length,0);assert.equal(initial.origins.length,0);
- const outcomes=[],clicks=[],model=[];let readOnly=false,modelBusy=false;
+ const outcomes=[],clicks=[],model=[],unrelated=new Map();let readOnly=false,modelBusy=false;
  await c.exposeBinding('__nativeTest',async({frame},msg)=>{
   if(msg.type==='state')return {paused:readOnly,aiEnabled:true};
   if(msg.type==='click'){clicks.push({frame:new URL(frame.url()).hostname,label:msg.label});return;}
@@ -28,7 +28,7 @@ function bridge(){
   if(msg.type==='interpret'){
    if(readOnly)return {action:'none',model:'disabled'};
    if(modelBusy)return {action:'none',model:'busy'};modelBusy=true;
-   try{const result=await interpret(msg);model.push({frame:new URL(frame.url()).hostname,...result,selected:msg.candidates.find(c=>c.id===result.candidateID)?.label});return result;}finally{modelBusy=false;}
+   try{const result=await interpret(msg);if(result.scope==='unrelated'){if(!unrelated.has(frame))unrelated.set(frame,new Set());unrelated.get(frame).add(msg.dom);}model.push({frame:new URL(frame.url()).hostname,...result,selected:msg.candidates.find(c=>c.id===result.candidateID)?.label});return result;}finally{modelBusy=false;}
   }
  });
  await c.addInitScript({content:`(${bridge.toString()})();document.addEventListener('DOMContentLoaded',()=>{${engine}\n${content}});`});
@@ -37,7 +37,7 @@ function bridge(){
   const end=Date.now()+30000;while(Date.now()<end && (!outcomes.length||modelBusy)){await p.waitForTimeout(500);}
   await p.waitForTimeout(1500);
  }catch(e){error=e.message.split('\n')[0];}
- async function banners(){const found=[];for(const f of p.frames()){try{const s=await f.evaluate(()=>{const s=globalThis.CookieEater?.inspect(document);return s?{provider:s.provider,controls:s.candidates.filter(c=>c.visible&&!c.disabled).map(c=>c.label)}:null;});if(s)found.push({frame:new URL(f.url()).hostname,...s});}catch{}}return found;}
+ async function banners(){const found=[];for(const f of p.frames()){try{const s=await f.evaluate(ignored=>{const CE=globalThis.CookieEater;if(!CE)return null;const ignoredRoots=new WeakSet();for(let i=0;i<40;i++){const s=CE.inspect(document,{ignoredRoots});if(!s)return null;if(ignored.includes(CE.domSnapshot(s))){ignoredRoots.add(s.root);continue;}return {provider:s.provider,controls:s.candidates.filter(c=>c.visible&&!c.disabled).map(c=>c.label)};}return null;},[...(unrelated.get(f)||[])]);if(s)found.push({frame:new URL(f.url()).hostname,...s});}catch{}}return found;}
  const remaining=await banners();let afterReload=null;
  if(outcomes.some(x=>['submitted','accepted','verified'].includes(x.status))&&!remaining.length){readOnly=true;try{await p.reload({waitUntil:'domcontentloaded',timeout:20000});await p.waitForTimeout(5000);afterReload=await banners();}catch{}}
  console.log(JSON.stringify({url,emptyProfile:true,clicks,model,outcomes,remaining,afterReload,error}));await c.close();

@@ -183,3 +183,11 @@ test('control IDs survive unrelated hidden controls appearing before them',()=>{
   assert.equal(after.candidates.find(c=>c.element===el).id,id);
   assert.notEqual(after.candidates[0].id,before.candidates[0].id);
 });
+test('cookie consent takes priority over an unrelated location dialog and excluded roots stay ignored',()=>{
+ const w=page('<section role="dialog" id="location"><h2>Select your country</h2><button>Close</button><button>Visit</button></section><section role="dialog" id="notice"><h2>À propos des cookies sur ce site</h2><button>Refuser tous les cookies</button><button>Tout autoriser</button></section>');
+ const visible=()=>true,ignoredRoots=new WeakSet();
+ assert.equal(CE.inspect(w.document,{visible}).root.id,'notice');
+ ignoredRoots.add(w.document.querySelector('#location'));
+ w.document.querySelector('#notice').remove();
+ assert.equal(CE.inspect(w.document,{visible,ignoredRoots}),null);
+});

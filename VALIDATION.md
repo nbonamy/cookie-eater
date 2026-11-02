@@ -59,7 +59,7 @@ Heise and Stern were also tried. Their unfamiliar settings remain Needs attentio
 
 The AI path validates live DOM identity, visibility, action type, and semantic effects without an English/French label allowlist. Disagreement leaves the banner alone. Model classification is probabilistic; these checks do not establish support for every language or publisher.
 
-Current automated coverage: 33 policy/background tests and 19 controlled WebKit scenarios, plus real native model probes. A replayable live-site probe is available as scripts/test-live.sh.
+Current automated coverage: 34 policy/background tests and 21 controlled WebKit scenarios, plus real native model probes. A replayable live-site probe is available as scripts/test-live.sh.
 
 ## DOM-guided fallback
 
@@ -70,3 +70,16 @@ M6 was tested with empty WebKit profiles and in the installed, Developer ID sign
 The final fresh-profile live regression passed M6, TF1, ZDF, Lidl, RAI, and Euronics, using the real Swift model. All six remained dismissed on reload with automation paused. Native probes also cover a selected-refusal DOM with a misleading close control and a standalone refusal confirmation that cannot be treated as a settings save.
 
 The 0.1.1 distribution (build 5) contains the same Safari-validated consent engine with updated version metadata. Both universal executables, sandbox entitlements, timestamped signatures, notarization, stapling, and Gatekeeper assessment were checked before publication. The release checks passed all 33 policy/background tests and 19 controlled WebKit scenarios.
+
+
+## ProBikeShop and Nutella
+
+The consent engine prioritizes recognizable consent dialogs over unrelated country-selection modals. The on-device model can also classify an unrelated dialog without clicking it, while observation continues for delayed consent banners. Controlled regressions cover both concurrent dialogs and delayed consent after an unrelated modal.
+
+ProBikeShop completed automatic rejection in actual Safari after targeted website-data removal. The country selector stayed open, and the popup recorded Requested. Fresh WebKit profiles also completed ProBikeShop, ZDF, and RAI, with no remaining consent dialog after reload while automation was paused.
+
+Nutella was checked in the installed build 7 in Safari after removing nutella.com and nutella.fr website data and confirming No Saved Website Data. Automatic rejection recorded Requested. The settled page stayed free of the banner after reload while Cookie Eater was paused, and automatic operation was restored. A fresh WebKit profile selected REFUSER and retained the choice on paused reload. No Nutella-specific code change was needed. Neither test claims stored-category verification.
+
+The companion app's privacy and support links were inspected in the installed build. The App Store package for 0.1.1 build 7 passed Apple's package validation and processing; this prepared build has not been submitted for review.
+
+Release 0.1.2 (build 8) uses this Safari-tested implementation with updated version metadata. All 34 policy/background tests and 21 controlled WebKit scenarios passed. Both universal executables passed strict signature verification; Apple notarization, stapling, and Gatekeeper assessment passed.

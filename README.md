@@ -51,6 +51,8 @@ COOKIE_EATER_TEAM_ID='TEAMID' COOKIE_EATER_CONFIGURATION=Debug ./scripts/build.s
 
 Signing identities, team IDs, passwords, and provisioning files belong in your local environment or keychain. Distribution builds require Developer ID signing and Apple notarization.
 
+For Mac App Store distribution, see the [store build instructions](AppStore/README.md).
+
 ## Test
 
 ```sh

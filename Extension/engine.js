@@ -62,8 +62,9 @@
         }
       }
     }
+    let fallback=null;
     for(const {el,provider} of roots) {
-      if(el===doc.body || el===doc.documentElement || !isVisible(el)) continue;
+      if(options.ignoredRoots?.has(el) || el===doc.body || el===doc.documentElement || !isVisible(el)) continue;
       const text=(el.innerText||el.textContent||'').trim();
       if(!text || text.length>18000) continue;
       const controls=[...el.querySelectorAll('button, input[type="button"], input[type="submit"], input[type="checkbox"], input[type="radio"], [role="radio"], [role="button"], [role="switch"], [role="checkbox"], [role="tab"], a[href]')];
@@ -77,10 +78,12 @@
       if(candidates.some(c=>c.visible)) {
         const wall=/[€$£]|\b(payant|paid|subscription|abonnement)\b/i.test(text)&&candidates.some(c=>c.visible && /^(refuser|reject|decline).*\b(abonner|subscribe|subscription)/.test(c.normalized));
         const freeChoice=candidates.some(c=>c.visible && !c.disabled && (direct.test(c.normalized)||settings.test(c.normalized)));
-        return {root:el,provider,rulesEligible:provider!=='Generic'||/\b(cookie|cookies|traceurs|consent|consentement)\b/i.test(text),text:text.slice(0,2000),candidates,isVisible,cookieWall:wall&&!freeChoice,onlyAcceptance:candidates.some(c=>c.visible&&!c.disabled&&accepts.test(c.normalized))&&candidates.filter(c=>c.visible&&!c.disabled).every(c=>!c.toggle&&(accepts.test(c.normalized)||(c.element.tagName==='A'&&/^(privacy policy|cookie policy|politique de confidentialite|politique des cookies)$/.test(c.normalized))))};
+        const snapshot={root:el,provider,rulesEligible:provider!=='Generic'||/\b(cookie|cookies|traceurs|consent|consentement)\b/i.test(text),text:text.slice(0,2000),candidates,isVisible,cookieWall:wall&&!freeChoice,onlyAcceptance:candidates.some(c=>c.visible&&!c.disabled&&accepts.test(c.normalized))&&candidates.filter(c=>c.visible&&!c.disabled).every(c=>!c.toggle&&(accepts.test(c.normalized)||(c.element.tagName==='A'&&/^(privacy policy|cookie policy|politique de confidentialite|politique des cookies)$/.test(c.normalized))))};
+        if(snapshot.rulesEligible) return snapshot;
+        fallback ||= snapshot;
       }
     }
-    return null;
+    return fallback;
   }
   function usable(c) {
     if(!c || !c.visible || c.disabled || !c.element.isConnected || !c.label) return false;

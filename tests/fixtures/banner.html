@@ -12,6 +12,11 @@ function rejected(){record('Optional cookies rejected');document.cookie="CookieC
 addEventListener('message',event=>{const frame=mount.querySelector('iframe');if(frame&&event.source===frame.contentWindow&&event.data==='consent-frame-finished')frame.remove();});
 function render(){
  if(scenario==='frame'||scenario==='removedFrame'){mount.innerHTML='<iframe title="Cookie consent frame" src="http://localhost:'+location.port+'/?case='+(scenario==='removedFrame'?'vanishing':'direct')+'" style="width:650px;height:350px;border:0"></iframe>';return;}
+ if(scenario==='unrelatedDelayed'){mount.innerHTML='<section role="dialog"><h2>Select your country</h2><button type="button">Close location dialog</button><button type="button">Visit</button></section>';return;}
+ if(scenario==='multiDialog'){
+  mount.innerHTML='<section role="dialog" id="location"><h2>Select your country</h2><button type="button" onclick="record(\'ERROR: country changed\')">Close location dialog</button><button type="button">Visit</button></section><section role="dialog" id="notice"><h2>À propos des cookies sur ce site</h2><button type="button" id="refuse">Refuser tous les cookies</button><button type="button" onclick="record(\'ERROR: accepted\')">Tout autoriser</button></section>';
+  mount.querySelector('#refuse').onclick=()=>{record('Optional cookies refused');mount.querySelector('#notice').remove();};return;
+ }
  if(scenario==='m6'){
   const root=document.createElement('section');root.id='didomi-host';root.innerHTML='<h2>Vos choix de confidentialité</h2><p>Traceurs et publicité personnalisée.</p>';
   function control(text,fn){const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=fn;root.append(b);return b;}

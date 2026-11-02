@@ -4,5 +4,11 @@
 <dict>
 	<key>SFSafariWebExtensionConverterVersion</key>
 	<string>27.1</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.productivity</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>Copyright © 2026 Nicolas Bonamy</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

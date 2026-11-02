@@ -21,6 +21,7 @@ const engine=fs.readFileSync('Extension/engine.js','utf8'),content=fs.readFileSy
      if(window.__delayInference)await new Promise(r=>setTimeout(r,1200));
      if(window.__busyCount>0){__busyCount--;return {action:'none',model:'busy'};}
      if(window.__unavailable)return {action:'none',model:'unavailable'};
+     if(msg.candidates.some(c=>c.label==='Close location dialog'))return {action:'none',scope:'unrelated',model:'available'};
      const save=msg.candidates.find(c=>c.label==='Enregistrer vos préférences et fermer');
      if(save&&msg.dom?.includes('aria-checked="true"'))return {action:'save',candidateID:save.id,effect:'saveNecessaryOnly',requiresPaymentOrAccount:false,alternatives:'rejectionAvailable'};
      const settings=msg.candidates.find(c=>c.label==='Paramétrer mes choix: Configurer vos consentements');
@@ -34,9 +35,10 @@ const engine=fs.readFileSync('Extension/engine.js','utf8'),content=fs.readFileSy
   await c.addInitScript({content:`(${mockBrowser.toString()})();document.addEventListener('DOMContentLoaded',()=>{${engine}\n${content}});`});
   const p=await c.newPage();
   async function run(scenario){await p.goto(base+scenario);await p.waitForFunction(()=>__finalOutcomes().length>0,{},{timeout:12000});return p.evaluate(()=>({outcomes:__outcomes,clicks:__clicks,modelCalls:__modelCalls}));}
-  for(const scenario of ['direct','french','settings','delayed','model','misleading','stuck','cookieWall','tf1','german','italian','m6']){
+  for(const scenario of ['multiDialog','direct','french','settings','delayed','model','misleading','stuck','cookieWall','tf1','german','italian','m6']){
    const r=await run(scenario);
    assert(!r.clicks.some(x=>x.startsWith('ERROR')),JSON.stringify(r));
+   if(scenario==='multiDialog'){assert.deepEqual(r.clicks,['Optional cookies refused']);assert.equal(r.outcomes[0].status,'submitted');assert.equal(r.modelCalls,1);assert(await p.locator('#location').isVisible());}
    if(scenario==='direct'||scenario==='delayed')assert.equal(r.outcomes[0].status,'verified');
    if(scenario==='french'||scenario==='settings'||scenario==='model')assert.equal(r.outcomes[0].status,'submitted');
    if(scenario==='settings')assert(r.clicks.includes('Saved: optional cookies and legitimate interest off'));
@@ -49,6 +51,11 @@ const engine=fs.readFileSync('Extension/engine.js','utf8'),content=fs.readFileSy
    if(scenario==='stuck'){assert.equal(r.clicks.length,1);assert.equal(r.outcomes[0].evidence,'interactionLimit');}
    console.log('PASS WebKit '+scenario);
   }
+  await p.goto(base+'unrelatedDelayed');
+  await p.waitForFunction(()=>__modelCalls===1);await p.waitForTimeout(1300);
+  assert.deepEqual(await p.evaluate(()=>__outcomes),[]);assert.deepEqual(await p.evaluate(()=>__clicks),[]);
+  await p.evaluate(()=>{const notice=document.createElement('section');notice.setAttribute('role','dialog');notice.innerHTML='<h2>Cookie choices</h2><button>Refuser tous les cookies</button>';notice.querySelector('button').onclick=()=>{record('Delayed refusal');notice.remove();};mount.append(notice);});
+  await p.waitForFunction(()=>__finalOutcomes().length);assert.deepEqual(await p.evaluate(()=>__clicks),['Delayed refusal']);assert.equal(await p.evaluate(()=>__modelCalls),1);console.log('PASS unrelated dialog creates no history and cannot mask a delayed consent banner');
   await p.goto(base+'model');await p.evaluate(()=>window.__unavailable=true);
   await p.waitForFunction(()=>__finalOutcomes().length);assert.deepEqual(await p.evaluate(()=>__clicks),[]);console.log('PASS unavailable model leaves unfamiliar banner');
   await p.goto(base+'delayed');await p.evaluate(()=>__pause(true));

@@ -54,6 +54,7 @@ struct ModelBridge {
             if dom != nil {
                 instructions += """
 
+                    Identify whether this dialog is cookie consent. For an unrelated dialog, set isCookieConsent=false, candidateID=none and action=none.
                     Use the consent DOM hierarchy, visible text, and selected/disabled states. Choose by exact data-ce-id.
                     A selected refusal radio needs an explicit save control, not another radio click.
                     The save action requires a settings panel with radio/checkbox choices; a standalone refusal confirmation is reject.
@@ -74,6 +75,7 @@ struct ModelBridge {
                 let properties: [DynamicGenerationSchema.Property]
                 if dom != nil {
                     properties = [
+                        DynamicGenerationSchema.Property(name:"isCookieConsent",description:"True only when this dialog manages cookie/tracking consent. Country selection, shipping, newsletter and login dialogs are unrelated.",schema:DynamicGenerationSchema(type:Bool.self)),
                         DynamicGenerationSchema.Property(name:"currentChoice", description:"One short sentence identifying the currently selected radio options or checked purposes and whether refusal still needs saving.", schema:DynamicGenerationSchema(type:String.self)),
                         DynamicGenerationSchema.Property(name:"candidateID", description:"The next control's exact data-ce-id. Select none if uncertain. Do not select an already selected radio; save the refusal instead.", schema:DynamicGenerationSchema(name:"ControlID",anyOf:eligible.compactMap { $0["id"] } + ["none"])),
                         DynamicGenerationSchema.Property(name:"action", description:"The effect of the chosen control: reject, open settings, disable an optional purpose, save existing refusal, accept only with no free refusal, or none.",schema:DynamicGenerationSchema(name:"Action",anyOf:actions))
@@ -97,6 +99,9 @@ struct ModelBridge {
                 // Fresh bounded sessions prevent retry transcripts from consuming the context window.
                 let response = try await session.respond(to:String(decoding:data,as:UTF8.self),schema:schema,
                                                          options:GenerationOptions(temperature:0,maximumResponseTokens:200))
+                if dom != nil, try !response.content.value(Bool.self,forProperty:"isCookieConsent") {
+                    return ["model":status,"action":"none","candidateID":"none","scope":"unrelated"]
+                }
                 let action = try response.content.value(String.self,forProperty:"action")
                 let effects = ["reject":"rejectOptionalCookies","settings":"openConsentSettings","disable":"disableOptionalPurpose","save":"saveNecessaryOnly","acceptOnly":"acceptToContinue"]
                 let matching: [[String:String]]

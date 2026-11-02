@@ -1,0 +1,22 @@
+{
+  "name": "Cookie Eater for Safari",
+  "subtitle": "Fewer banners. More browsing.",
+  "primaryLocale": "en-US",
+  "platform": "MAC_OS",
+  "version": "0.1.2",
+  "bundleID": "com.nbonamy.CookieEater",
+  "sku": "cookie-eater-macos",
+  "price": "Free",
+  "releaseType": "MANUAL",
+  "primaryCategory": "PRODUCTIVITY",
+  "secondaryCategory": "UTILITIES",
+  "supportURL": "https://github.com/nbonamy/cookie-eater/issues",
+  "privacyPolicyURL": "https://github.com/nbonamy/cookie-eater/blob/main/PRIVACY.md",
+  "marketingURL": "https://github.com/nbonamy/cookie-eater",
+  "keywords": "safari,cookies,privacy,consent,banners,tracking,apple intelligence,on-device",
+  "appStoreID": "6829860527",
+  "ageRating": "4+",
+  "contentRights": "DOES_NOT_USE_THIRD_PARTY_CONTENT",
+  "dataCollection": "NONE",
+  "tracking": false
+}

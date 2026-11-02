@@ -1,0 +1,13 @@
+Cookie Eater is a Mac-only Safari Web Extension. No account, login, purchase, subscription, or server is required.
+
+Enable the extension in Safari Settings > Extensions and allow access on test websites. Open its toolbar popup for site pause/retry, the Apple Intelligence toggle, and local recent activity. The containing app provides setup, privacy policy, and support links; it can be quit while the extension runs.
+
+Website access is essential because the extension discovers and operates consent controls on the websites the user permits. It does not read passwords or submit account, payment, purchase, or newsletter forms. Native inference uses Apple's Foundation Models locally, without a network-client entitlement or external AI provider.
+
+Apple Intelligence availability varies by hardware and settings. If unavailable, bundled deterministic rules continue to handle supported banners. The popup reports availability, and the AI toggle allows testing rule-only operation.
+
+The preference is to reject optional cookies, including applicable legitimate-interest options. Acceptance is a fallback when no free refusal path is found. Execution is bounded, live controls are revalidated before clicks, and an independent semantic assessment checks model proposals. Uncertain cases remain manual.
+
+Outcomes distinguish Requested from Verified. Stored Cookiebot category flags are currently required for Verified; banner disappearance alone does not establish rejection. Recent history is local and bounded to 100 records; private-window outcomes are not stored.
+
+For live testing, M6 and TF1 exercise multi-step rejection; ProBikeShop exercises consent alongside unrelated country-selection UI. Website banners can change or fail to appear by region or prior consent. No CAPTCHA bypass is performed.

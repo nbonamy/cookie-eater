@@ -26,6 +26,10 @@ struct WelcomeView: View {
                     if failure != nil { DispatchQueue.main.async { error = "Open Safari → Settings → Extensions, then enable Cookie Eater." } }
                 }
             }.buttonStyle(.borderedProminent).controlSize(.large)
+            HStack(spacing: 16) {
+                Link("Privacy Policy", destination: URL(string: "https://github.com/nbonamy/cookie-eater/blob/main/PRIVACY.md")!)
+                Link("Support", destination: URL(string: "https://github.com/nbonamy/cookie-eater/issues")!)
+            }.font(.callout)
             if let error { Text(error).font(.caption).foregroundStyle(.secondary) }
         }
         .padding(28).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)

@@ -1,6 +1,6 @@
 {
   "name": "cookie-eater",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Automatic cookie consent for Safari on Mac, with on-device AI",
   "scripts": {
