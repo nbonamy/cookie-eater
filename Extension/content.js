@@ -97,13 +97,24 @@
       }
     } finally {busy=false;if(generation!==epoch)schedule();}
   }
-  const observer=new MutationObserver(schedule);
-  observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class','hidden','aria-hidden','aria-checked','checked']});
-  const watchNavigation=()=>setInterval(()=>{if(location.href!==href){href=location.href;reset();}},1000);
+  const observer=new MutationObserver(schedule),observed=new Set();
+  function observeRoots() {
+    const roots=CE.scopes(document).map(root=>root===document?document.documentElement:root);
+    if(roots.length===observed.size && roots.every(root=>observed.has(root))) return;
+    observer.disconnect();observed.clear();
+    for(const root of roots) {
+      observed.add(root);
+      observer.observe(root,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class','hidden','inert','aria-hidden','aria-checked','checked']});
+    }
+    schedule();
+  }
+  observeRoots();
+  // Attaching a shadow root does not mutate the light DOM. Discover it even on an otherwise idle page.
+  const watchNavigation=()=>setInterval(()=>{if(location.href!==href){href=location.href;reset();}if(!finished&&!stopped)observeRoots();},1000);
   let navigation=watchNavigation();
   browser.runtime.onMessage.addListener(message=>{if(message?.type==='retry'){reset();return Promise.resolve({ok:true});}});
   browser.storage.onChanged.addListener((changes,area)=>{if(area==='local' && (changes.pausedSites || changes.aiEnabled))reset();});
-  addEventListener('pagehide',()=>{epoch++;stopped=true;observer.disconnect();clearTimeout(timer);clearInterval(navigation);});
-  addEventListener('pageshow',event=>{if(event.persisted){stopped=false;href=location.href;observer.observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class','hidden','aria-hidden','aria-checked','checked']});navigation=watchNavigation();reset();}});
+  addEventListener('pagehide',()=>{epoch++;stopped=true;observer.disconnect();observed.clear();clearTimeout(timer);timer=null;clearInterval(navigation);});
+  addEventListener('pageshow',event=>{if(event.persisted){stopped=false;href=location.href;observeRoots();navigation=watchNavigation();reset();}});
   schedule();
 })();

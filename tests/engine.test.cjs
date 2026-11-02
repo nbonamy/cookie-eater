@@ -191,3 +191,26 @@ test('cookie consent takes priority over an unrelated location dialog and exclud
  w.document.querySelector('#notice').remove();
  assert.equal(CE.inspect(w.document,{visible,ignoredRoots}),null);
 });
+test('discovers nested open shadow consent and resolves labels inside the same tree',()=>{
+ const w=page('<h2 id="refuse-label">Accept all</h2><div id="widget"></div>');
+ const outer=w.document.querySelector('#widget').attachShadow({mode:'open'});outer.innerHTML='<div id="nested"></div>';
+ const inner=outer.querySelector('#nested').attachShadow({mode:'open'});inner.innerHTML='<section role="dialog"><h2>Cookie preferences</h2><span id="refuse-label">Continuer sans accepter</span><button aria-labelledby="refuse-label"></button><button>Accept all</button></section>';
+ const s=CE.inspect(w.document,{visible:()=>true});assert(s,'Consent inside an open shadow tree must be discoverable');
+ assert.equal(CE.choose(s).candidate.label,'Continuer sans accepter');assert.equal(CE.choose(s).action,'reject');
+ assert.match(CE.domSnapshot(s),/Continuer sans accepter/);
+});
+test('shadow visibility includes hidden, inert and aria-hidden ancestors across the host',()=>{
+ const w=page('<div id="host"></div>');const host=w.document.querySelector('#host');
+ const shadow=host.attachShadow({mode:'open'});shadow.innerHTML='<section role="dialog"><h2>Cookie preferences</h2><button>Reject all</button></section>';
+ for(const el of [...w.document.querySelectorAll('*'),...shadow.querySelectorAll('*')])el.style.opacity='1';
+ const button=shadow.querySelector('button');button.getClientRects=()=>[{}];
+ assert.equal(CE.visible(button),true);
+ for(const [key,value] of [['hidden',''],['inert',''],['aria-hidden','true'],['style','display:none'],['style','opacity:0']]){
+  host.setAttribute(key,value);assert.equal(CE.visible(button),false,key+'='+value);host.removeAttribute(key);host.style.opacity='1';
+ }
+});
+test('discovers a floating consent panel without provider IDs, dialog roles or English text',()=>{
+ const w=page('<nav style="position:fixed"><button>Produkte</button></nav><div style="position:fixed;bottom:0"><p>Ihre Datenschutzeinstellungen</p><button>Nur erforderliche zulassen</button><button>Alle akzeptieren</button></div>');
+ const s=CE.inspect(w.document,{visible:()=>true});assert(s,'The model must receive unknown floating panels');assert.equal(s.root.tagName,'DIV');assert.equal(s.rulesEligible,false);assert.equal(CE.choose(s),null);
+ assert.deepEqual(CE.modelCandidates(s).map(c=>c.label),['Nur erforderliche zulassen','Alle akzeptieren']);
+});

@@ -34,10 +34,12 @@ const engine=fs.readFileSync('Extension/engine.js','utf8'),content=fs.readFileSy
   const delivered=[];await c.exposeBinding('__reportOutcome',(_,message)=>delivered.push(message));
   await c.addInitScript({content:`(${mockBrowser.toString()})();document.addEventListener('DOMContentLoaded',()=>{${engine}\n${content}});`});
   const p=await c.newPage();
-  async function run(scenario){await p.goto(base+scenario);await p.waitForFunction(()=>__finalOutcomes().length>0,{},{timeout:12000});return p.evaluate(()=>({outcomes:__outcomes,clicks:__clicks,modelCalls:__modelCalls}));}
-  for(const scenario of ['multiDialog','direct','french','settings','delayed','model','misleading','stuck','cookieWall','tf1','german','italian','m6']){
+  async function run(scenario){await p.goto(base+scenario);await p.waitForFunction(()=>__finalOutcomes().length>0,{},{timeout:scenario==='shadowDelayed'?40000:12000});return p.evaluate(()=>({outcomes:__outcomes,clicks:__clicks,modelCalls:__modelCalls}));}
+  for(const scenario of ['floating','shadowDelayed','shadowAttachedLate','shadowModel','multiDialog','direct','french','settings','delayed','model','misleading','stuck','cookieWall','tf1','german','italian','m6']){
    const r=await run(scenario);
    assert(!r.clicks.some(x=>x.startsWith('ERROR')),JSON.stringify(r));
+   if(scenario==='floating'){assert.deepEqual(r.clicks,['Floating refusal']);assert.equal(r.outcomes[0].source,'model');assert.equal(r.modelCalls,1);}
+   if(scenario.startsWith('shadow')){assert.deepEqual(r.clicks,['Shadow refusal']);assert.equal(r.outcomes[0].status,'submitted');assert.equal(r.modelCalls,scenario==='shadowModel'?1:0);}
    if(scenario==='multiDialog'){assert.deepEqual(r.clicks,['Optional cookies refused']);assert.equal(r.outcomes[0].status,'submitted');assert.equal(r.modelCalls,1);assert(await p.locator('#location').isVisible());}
    if(scenario==='direct'||scenario==='delayed')assert.equal(r.outcomes[0].status,'verified');
    if(scenario==='french'||scenario==='settings'||scenario==='model')assert.equal(r.outcomes[0].status,'submitted');

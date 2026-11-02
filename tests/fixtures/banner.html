@@ -11,6 +11,22 @@ function record(text){__clicks.push(text);result.textContent=text;}
 function rejected(){record('Optional cookies rejected');document.cookie="CookieConsent="+encodeURIComponent("{necessary:true,preferences:false,statistics:false,marketing:false,method:'explicit',stamp:'"+Date.now()+"'}")+'; path=/';mount.replaceChildren();if(scenario==='vanishing')parent.postMessage('consent-frame-finished','*');}
 addEventListener('message',event=>{const frame=mount.querySelector('iframe');if(frame&&event.source===frame.contentWindow&&event.data==='consent-frame-finished')frame.remove();});
 function render(){
+ if(scenario==='floating'){
+  const panel=document.createElement('div');panel.style='position:fixed;bottom:0;background:white;padding:24px';
+  panel.innerHTML='<p>Ihre Datenschutzeinstellungen</p><button type="button">Nur erforderliche zulassen</button><button type="button">Alle akzeptieren</button>';
+  panel.children[1].onclick=()=>{record('Floating refusal');panel.remove();};panel.children[2].onclick=()=>record('ERROR: floating accepted');mount.append(panel);return;
+ }
+ if(['shadowDelayed','shadowAttachedLate','shadowModel'].includes(scenario)){
+  const host=document.createElement('div');host.id='widget';mount.append(host);
+  let tree=scenario==='shadowAttachedLate'?null:host.attachShadow({mode:'open'});
+  if(!tree)setTimeout(()=>{tree=host.attachShadow({mode:'open'});},1200);
+  setTimeout(()=>{
+   if(scenario==='shadowModel'){const nested=document.createElement('div');tree.append(nested);tree=nested.attachShadow({mode:'open'});}
+   tree.innerHTML='<section role="dialog"><h2>Cookie preferences</h2><button type="button" id="refuse">'+(scenario==='shadowModel'?'Nur erforderliche zulassen':'Continuer sans accepter')+'</button><button type="button" id="accept">Accept all</button></section>';
+   tree.querySelector('#refuse').onclick=()=>{record('Shadow refusal');host.remove();};
+   tree.querySelector('#accept').onclick=()=>record('ERROR: shadow accepted');
+  },scenario==='shadowDelayed'?32000:2300);return;
+ }
  if(scenario==='frame'||scenario==='removedFrame'){mount.innerHTML='<iframe title="Cookie consent frame" src="http://localhost:'+location.port+'/?case='+(scenario==='removedFrame'?'vanishing':'direct')+'" style="width:650px;height:350px;border:0"></iframe>';return;}
  if(scenario==='unrelatedDelayed'){mount.innerHTML='<section role="dialog"><h2>Select your country</h2><button type="button">Close location dialog</button><button type="button">Visit</button></section>';return;}
  if(scenario==='multiDialog'){

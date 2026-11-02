@@ -29,30 +29,57 @@
   const essential = /\b(necessary|essential|strictly necessary|necessaire|necessaires|essentiel|essentiels|obligatoire|required|security)\b/;
   const optional = /\b(marketing|analytics|analytique|statistic|statistics|statistiques|advertising|advertisement|advertisements|publicite|publicitaires|personalization|personnalisation|preferences|preference|performance|functional|fonctionnels|fonctionnalite|social media|legitimate interest|interet legitime|interets legitimes|measurement|mesure)\b/;
   const forbidden = /\b(accept|agree|allow all|subscribe|subscription|pay|purchase|sign in|log in|buy|accepter|abonner|payer|acheter)\b/;
+  // Shadow trees are separate query and mutation-observation scopes. Closed roots stay inaccessible.
+  function scopes(doc) {
+    const result=[doc];let remaining=10000;
+    for(let i=0;i<result.length && remaining>0;i++) {
+      const walker=doc.createTreeWalker(result[i],1);
+      for(let el;remaining>0 && (el=walker.nextNode());remaining--) {
+        if(el.shadowRoot && result.length<32) result.push(el.shadowRoot);
+      }
+    }
+    return result;
+  }
   const visible = el => {
     if (!el.isConnected || el.closest('[hidden], [inert], [aria-hidden="true"]')) return false;
     const w = el.ownerDocument.defaultView;
-    for(let p=el;p && p.nodeType===1;p=p.parentElement) {
+    for(let p=el;p && p.nodeType===1;p=p.parentElement || p.getRootNode().host) {
+      if(p.matches('[hidden], [inert], [aria-hidden="true"]')) return false;
       const s=w.getComputedStyle(p);
       if(s.display==='none'||s.visibility==='hidden'||Number(s.opacity)===0) return false;
     }
     return el.getClientRects().length > 0;
   };
   function label(el) {
-    const doc=el.ownerDocument;
-    const labelled=(el.getAttribute('aria-labelledby')||'').split(/\s+/).map(id=>doc.getElementById(id)?.textContent||'').join(' ').trim();
+    const tree=el.getRootNode();
+    const labelled=(el.getAttribute('aria-labelledby')||'').split(/\s+/).map(id=>tree.getElementById?.(id)?.textContent||'').join(' ').trim();
     return (el.getAttribute('aria-label') || labelled || (el.labels && [...el.labels].map(l=>l.textContent).join(' ')) || el.textContent || el.value || '').trim().slice(0,180);
   }
   function inspect(doc, options={}) {
     const isVisible=options.visible || visible;
-    const roots=[];
-    for (const [provider,selector] of providers) for(const el of doc.querySelectorAll(selector)) roots.push({el,provider});
-    for(const el of doc.querySelectorAll('[role="dialog"], [aria-modal="true"], dialog, [id*="cookie" i], [id*="consent" i], [class*="cookie-banner" i], [class*="consent-banner" i]')) {
+    const roots=[],trees=scopes(doc);
+    for (const [provider,selector] of providers) for(const tree of trees) for(const el of tree.querySelectorAll(selector)) roots.push({el,provider});
+    for(const tree of trees) for(const el of tree.querySelectorAll('[role="dialog"], [aria-modal="true"], dialog, [id*="cookie" i], [id*="consent" i], [class*="cookie-banner" i], [class*="consent-banner" i]')) {
       if(!roots.some(r=>r.el===el)) roots.push({el,provider:'Generic'});
       if(roots.length>=40) break;
     }
+    // Unfamiliar banners may have no consent IDs or dialog role. Floating panels
+    // reach the same consent classifier; navigation and forms are not consent roots.
+    const buttons=trees.flatMap(tree=>[...tree.querySelectorAll('button, [role="button"]')]).slice(0,200);
+    const floating=new Set();
+    for(const button of buttons) {
+      if(!isVisible(button)) continue;
+      for(let el=button.parentElement,depth=0;el && el!==doc.body && depth<6;el=el.parentElement,depth++) {
+        if(roots.some(r=>r.el===el) || floating.has(el)) break;
+        if(!['fixed','sticky'].includes(doc.defaultView.getComputedStyle(el).position)) continue;
+        if(!el.matches('main') && !el.closest('header, nav, form, [role="navigation"], [role="banner"], [role="search"]')) floating.add(el);
+        break;
+      }
+      if(floating.size>=20) break;
+    }
+    for(const el of floating) roots.push({el,provider:'Generic'});
     // Some publishers render a custom subscribe-or-consent layer without dialog semantics.
-    for(const button of [...doc.querySelectorAll('button, [role="button"]')].slice(0,200)) {
+    for(const button of buttons) {
       if(!/^(refuser|reject|decline).*\b(abonner|subscribe|subscription)/.test(normalize(label(button))) || !isVisible(button)) continue;
       for(let el=button.parentElement,depth=0;el && el!==doc.body && depth<6;el=el.parentElement,depth++) {
         const text=el.innerText||el.textContent||'';
@@ -195,5 +222,5 @@
     }
     return {status:'submitted',evidence:'bannerDismissedWithoutStoredProof'};
   }
-  return {normalize,inspect,choose,validate,evidence,visible,readyToSave,modelCandidates,modelSaveReady,domSnapshot};
+  return {normalize,inspect,choose,validate,evidence,visible,scopes,readyToSave,modelCandidates,modelSaveReady,domSnapshot};
 });

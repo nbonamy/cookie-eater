@@ -1,6 +1,6 @@
 # Mac App Store submission
 
-The store listing is **Cookie Eater for Safari**, under app ID `6829860527`. Cookie Eater is a free, Mac-only Safari extension with manual release after approval.
+The store listing is **Cookie Eater for Safari**, under app ID `6829860527`. Cookie Eater is a free, Mac-only Safari extension with automatic release after Apple approval.
 
 - Containing app: `com.nbonamy.CookieEater`
 - Safari extension: `com.nbonamy.CookieEater.Extension`
@@ -29,6 +29,6 @@ node AppStore/render-screenshots.cjs
 
 The renderer uses the shipped popup HTML, CSS, and JavaScript in WebKit with fictional example domains and activity. It produces opaque 1280 × 800 Mac screenshots, with no personal browsing history. It does not alter the popup UI or invent product controls.
 
-Before review, select the processed build, upload the screenshots and metadata, complete the store questionnaires, verify pricing is free, and choose manual release. Submission for Apple review is a separate action.
+Before review, select the processed build, upload the screenshots and metadata, complete the store questionnaires, verify pricing is free, and check the release setting. Submission for Apple review is a separate action.
 
 Apple references: [Safari extension distribution](https://developer.apple.com/documentation/safariservices/distributing-your-safari-web-extension), [Mac screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications), [privacy details](https://developer.apple.com/app-store/app-privacy-details/).

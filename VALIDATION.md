@@ -36,7 +36,7 @@ Controlled tests reproduce the same controls and frame teardown. Clicks are reco
 - Verified rejection currently requires fresh Cookiebot category flags. Other flows remain “Requested” unless stronger evidence is added.
 - Unavailable-model behavior was simulated in browser tests; Apple Intelligence was not disabled system-wide for testing.
 - Closed shadow roots, frames without Safari website permission, unsupported language/control labels, and settings that cannot be interpreted safely remain manual.
-- The 0.1.1 universal distribution build passed Apple notarization and stapler validation. Gatekeeper reports Notarized Developer ID. Local development builds also remain available. The app has not been submitted to the App Store.
+- The 0.1.1 universal distribution build passed Apple notarization and stapler validation. Gatekeeper reports Notarized Developer ID. Local development builds also remain available. App Store distribution is managed through the separate store listing.
 
 ## Live multilingual browser checks
 
@@ -59,7 +59,7 @@ Heise and Stern were also tried. Their unfamiliar settings remain Needs attentio
 
 The AI path validates live DOM identity, visibility, action type, and semantic effects without an English/French label allowlist. Disagreement leaves the banner alone. Model classification is probabilistic; these checks do not establish support for every language or publisher.
 
-Current automated coverage: 34 policy/background tests and 21 controlled WebKit scenarios, plus real native model probes. A replayable live-site probe is available as scripts/test-live.sh.
+Current automated coverage: 37 policy/background tests and 25 controlled WebKit scenarios, plus real native model probes. A replayable live-site probe is available as scripts/test-live.sh.
 
 ## DOM-guided fallback
 
@@ -83,3 +83,21 @@ Nutella was checked in the installed build 7 in Safari after removing nutella.co
 The companion app's privacy and support links were inspected in the installed build. The App Store package for 0.1.1 build 7 passed Apple's package validation and processing; this prepared build has not been submitted for review.
 
 Release 0.1.2 (build 8) uses this Safari-tested implementation with updated version metadata. All 34 policy/background tests and 21 controlled WebKit scenarios passed. Both universal executables passed strict signature verification; Apple notarization, stapling, and Gatekeeper assessment passed.
+
+
+## Open shadow DOM and Val Thorens
+
+Version 0.2.0 (build 10) discovers consent dialogs in open shadow trees, including nested trees and roots attached after page load. It observes each discovered tree and checks for newly attached roots while waiting for consent. Discovery is bounded to 10,000 elements and 32 document/shadow scopes. Visibility checks include hidden, inert, aria-hidden, and styled ancestors across shadow hosts; accessible labels resolve within their own tree. Closed shadow roots remain inaccessible.
+
+All 37 policy/background tests and 25 controlled WebKit scenarios passed. New regressions cover a banner inserted after 32 seconds into an existing shadow root, a root attached after load, nested shadow trees using model interpretation, shadow-local labels, and hidden shadow hosts.
+
+Safari's website-data manager confirmed No Saved Website Data for valthorens.com before the live visit. The installed, Developer ID signed and notarized 0.2.0 build automatically handled the Axeptio banner in its open shadow tree and recorded Requested. This is not stored-category verification. The initial fresh headless WebKit probes did not surface the banner, including a longer visit with scrolling; those visits are not counted as live-site passes.
+
+
+Les 3 Vallées exposed a role-less floating consent panel. Bounded discovery now considers up to 20 floating panels reached from the first 200 buttons, excluding navigation and forms. The on-device model classifies unfamiliar panels and their controls; no publisher-specific selector or translated click phrase was added. A German fixture exercises this path without provider IDs, a dialog role, or English text.
+
+Fresh WebKit profiles using the real Swift model completed Les 3 Vallées, M6 and ProBikeShop, with no remaining banner after reload while automation was paused. Actual Safari also automatically handled Les 3 Vallées after targeted website-data removal confirmed No Saved Website Data, recording Requested.
+
+Val Thorens stayed clear for 84 seconds after a Safari reload with Cookie Eater paused. These outcomes remain unverified rejection requests rather than verified stored-category results.
+
+Les 3 Vallées also stayed clear for 62 seconds on a Safari reload with automation paused. Automatic operation was restored after testing. The final 0.2.0 build 10 passed universal-binary, strict signature, notarization, stapling, and Gatekeeper checks.
