@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.1
+
+- Complete M6's settings flow by selecting refusal and saving the choice.
+- Fall back to on-device DOM interpretation when bundled rules cannot continue.
+- Handle radio selections and incomplete accessibility labels, and keep control IDs stable as banners update.
+- Check action compatibility and selected states before saving; distinguish close controls from refusal confirmation.
+
 ## 0.1.0
 
 - Automatic cookie consent handling in Safari on Mac.

@@ -130,3 +130,56 @@ test('model cannot click explanatory links inside consent dialogs',()=>{
   assert.equal(CE.validate(s,assessed('c0'),new Set(),true),false);
   assert.equal(CE.validate(s,assessed('c1','settings'),new Set(),true),true);
 });
+
+test('keeps visible button text alongside an incomplete accessibility label',()=>{
+  const s=view(dialog('<button aria-label="TOUT">Tout accepter</button><button>Refuser et payer 5,99€/mois</button>'));
+  assert.equal(s.candidates[0].label,'TOUT');
+  assert.equal(s.candidates[0].text,'Tout accepter');
+  assert.equal(CE.choose(s),null);
+});
+
+test('selected refusal radios stop being actionable and the model can save a complete selection',()=>{
+  const s=view(dialog('<div role="radiogroup"><button role="radio" aria-checked="true">Refuser</button><button role="radio" aria-checked="false">Accepter</button></div><button>Enregistrer vos préférences et fermer</button>'));
+  assert.equal(CE.choose(s),null);
+  const decision=assessed('c2','save');
+  assert.equal(CE.validate(s,decision,new Set(),true),true);
+  assert.equal(CE.validate(s,{candidateID:'c2',action:'save'},new Set(),true),false);
+  s.candidates[0].state=false;
+  assert.equal(CE.validate(s,decision,new Set(),true),false);
+});
+test('DOM fallback preserves state and labels without scripts, URLs, or input values',()=>{
+  const s=view(dialog('<script>secret()</script><input value="private"><div role="radiogroup"><button role="radio" aria-checked="true">Refuser</button><button role="radio" aria-checked="false">Accepter</button></div><button aria-label="TOUT">Tout accepter</button><a href="https://private/path">Info</a>'));
+  const html=CE.domSnapshot(s);
+  assert.match(html,/role="radio"/);assert.match(html,/aria-checked="true"/);
+  assert.match(html,/data-ce-id="c2"/);assert.match(html,/aria-label="TOUT"/);assert.match(html,/Tout accepter/);
+  assert(!/secret|https:|private|<script|value=/.test(html));
+  assert(html.length<=3000);
+});
+
+test('currency-bearing controls are blocked even if a model misclassifies them as rejection',()=>{
+  for(const text of ['Refuser et payer 5,99€','Ablehnen und 5$ bezahlen','拒否して￥500を支払う']){
+    const s=view(dialog(`<button>${text}</button><button>Settings</button>`));
+    assert.equal(CE.validate(s,assessed('c0'),new Set(),true),false);
+    assert(!CE.modelCandidates(s).some(c=>c.id==='c0'));
+  }
+});
+
+test('active Didomi preferences take precedence over the underlying notice',()=>{
+  const s=view('<div id="didomi-host"><div class="didomi-popup-container"><h2>Preferences</h2><button>Save preferences</button></div><button>Reject all</button><button>Accept all</button></div>');
+  assert.equal(s.root.className,'didomi-popup-container');
+  assert.deepEqual(s.candidates.map(c=>c.label),['Save preferences']);
+});
+test('a radio option cannot be clicked as an open-settings action',()=>{
+  const s=view(dialog('<button role="radio" aria-checked="false">Accepter</button>'));
+  assert.equal(CE.validate(s,assessed('c0','settings'),new Set(),true),false);
+});
+
+test('control IDs survive unrelated hidden controls appearing before them',()=>{
+  const w=page(dialog('<button>Reject all</button><button>Save preferences</button>'));
+  const options={visible:el=>!el.hidden&&!el.closest('[hidden]')};
+  const before=CE.inspect(w.document,options),id=before.candidates[1].id,el=before.candidates[1].element;
+  const hidden=w.document.createElement('button');hidden.hidden=true;hidden.textContent='Hidden';w.document.querySelector('section').prepend(hidden);
+  const after=CE.inspect(w.document,options);
+  assert.equal(after.candidates.find(c=>c.element===el).id,id);
+  assert.notEqual(after.candidates[0].id,before.candidates[0].id);
+});

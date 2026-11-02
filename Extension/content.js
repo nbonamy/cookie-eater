@@ -22,7 +22,7 @@
     if(!snapshot) {busy=false;return;}
     const generation=epoch,start=Date.now(),initial=cookies(),provider=snapshot.provider;
     const id=crypto.randomUUID?.()||Array.from(crypto.getRandomValues(new Uint8Array(16)),n=>n.toString(16).padStart(2,'0')).join('');
-    let source='rules',inferences=0,finalAction=null;
+    let source='rules',inferences=0,finalAction=null,interactions=0;
     const visited=new Set(),clicked=new WeakSet();
     const current=()=>!stopped && generation===epoch && href===location.href && Date.now()-start<30000;
     const outcome=async(status,evidence)=>{
@@ -45,16 +45,16 @@
             await outcome(result.status,result.evidence);return;
           }
         }
-        let choice=CE.choose(snapshot,visited), assessment=null;
+        let choice=CE.choose(snapshot,visited,clicked), assessment=null;
         if(!choice && state.aiEnabled && inferences<3) {
           inferences++;
-          const supplied=CE.modelCandidates(snapshot).slice(0,24);
-          const result=await send({type:'interpret',banner:snapshot.text,candidates:supplied.map(c=>({id:c.id,label:c.label,state:c.toggle?String(c.state):'button'}))}).catch(()=>null);
+          const supplied=CE.modelCandidates(snapshot,clicked).slice(0,24),dom=CE.domSnapshot(snapshot);
+          const result=await send({type:'interpret',banner:snapshot.text.slice(0,500),dom,canSave:CE.modelSaveReady(snapshot),candidates:supplied.map(c=>({id:c.id,label:c.label,text:c.text,state:c.radio?'unselected radio':c.toggle?String(c.state):'button'}))}).catch(()=>null);
           if(!current()) return;
           if(result?.model==='busy'){inferences--;await sleep(1000);continue;}
           const refreshed=CE.inspect(document);
           // A model reply never survives a changed banner, label, or switch state.
-          if(!refreshed || refreshed.root!==snapshot.root || refreshed.text!==snapshot.text || snapshot.candidates.some((c,i)=>c.element!==refreshed.candidates[i]?.element||c.label!==refreshed.candidates[i]?.label||c.state!==refreshed.candidates[i]?.state)) { continue; }
+          if(!refreshed || refreshed.root!==snapshot.root || CE.domSnapshot(refreshed)!==dom || supplied.some(c=>!refreshed.candidates.some(live=>live.element===c.element&&live.label===c.label&&live.text===c.text&&live.state===c.state&&live.disabled===c.disabled))) { continue; }
           snapshot=refreshed;
           if(result && CE.validate(snapshot,result,visited,true)) {
             assessment=result;
@@ -62,23 +62,27 @@
             source='model';
           }
         }
-        if(!choice) {await outcome('needsAttention','ambiguousControls');return;}
+        if(!choice) {await outcome('needsAttention',interactions?'interactionLimit':'ambiguousControls');return;}
         const {candidate,action}=choice;
         const stateBeforeClick=await send({type:'state'}).catch(()=>null);
         if(!current() || !stateBeforeClick || stateBeforeClick.paused) return;
         const fresh=CE.inspect(document);
         if(!fresh || fresh.root!==snapshot.root || fresh.text!==snapshot.text) continue;
-        const live=fresh.candidates.find(c=>c.element===candidate.element && c.label===candidate.label && c.state===candidate.state);
+        const live=fresh.candidates.find(c=>c.element===candidate.element && c.label===candidate.label && c.text===candidate.text && c.state===candidate.state);
         if(!live || !fresh.isVisible(live.element) || !CE.validate(fresh,{...assessment,candidateID:live.id,action},visited,assessment!==null)) continue;
         if(clicked.has(live.element)) {await outcome('needsAttention','interactionLimit');return;}
-        clicked.add(live.element);
+        clicked.add(live.element);interactions++;
         if(action==='tab') visited.add(live.normalized);
-        finalAction=['reject','save','accept'].includes(action)?action:null;
+        finalAction=!live.radio && ['reject','save','accept'].includes(action)?action:null;
         live.element.click();
         // Consent frames may disappear on the next task. Preserve the actual click now,
         // then upgrade this same record if the frame stays alive long enough to verify.
         if(finalAction) send({type:'outcome',id,status:action==='accept'?'accepted':'submitted',evidence:action==='accept'?'acceptanceClicked':'rejectionClicked',provider,source}).catch(()=>{});
         await sleep(650);
+        if(action==='reject' && live.radio && current()) {
+          const after=CE.inspect(document)?.candidates.find(c=>c.element===live.element);
+          if(after?.state!==true) {await outcome('needsAttention','ambiguousControls');return;}
+        }
         if(action==='disable' && current()) {
           const after=CE.inspect(document)?.candidates.find(c=>c.element===live.element);
           if(after && after.state!==false) {await outcome('needsAttention','ambiguousControls');return;}

@@ -12,6 +12,23 @@ function rejected(){record('Optional cookies rejected');document.cookie="CookieC
 addEventListener('message',event=>{const frame=mount.querySelector('iframe');if(frame&&event.source===frame.contentWindow&&event.data==='consent-frame-finished')frame.remove();});
 function render(){
  if(scenario==='frame'||scenario==='removedFrame'){mount.innerHTML='<iframe title="Cookie consent frame" src="http://localhost:'+location.port+'/?case='+(scenario==='removedFrame'?'vanishing':'direct')+'" style="width:650px;height:350px;border:0"></iframe>';return;}
+ if(scenario==='m6'){
+  const root=document.createElement('section');root.id='didomi-host';root.innerHTML='<h2>Vos choix de confidentialité</h2><p>Traceurs et publicité personnalisée.</p>';
+  function control(text,fn){const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=fn;root.append(b);return b;}
+  const accept=control('Tout accepter',()=>record('ERROR: accepted'));accept.setAttribute('aria-label','TOUT');
+  control('Refuser et payer 5,99€/mois',()=>record('ERROR: subscription'));
+  const settings=control('Paramétrer mes choix',()=>{
+   record('Settings opened');root.innerHTML='<h2>Préférences de confidentialité</h2>';
+   for(const name of ['', 'Publicité', 'Partenaires']){
+    const group=document.createElement('div');group.setAttribute('role','radiogroup');root.append(group);
+    for(const [text,refusal] of [['Refuser',true],['Accepter',false]]){
+     const b=document.createElement('button');b.type='button';b.textContent=text+(name?' '+name:'');b.setAttribute('role','radio');b.setAttribute('aria-checked','false');b.dataset.refusal=String(refusal);
+     b.onclick=()=>{if(!refusal){record('ERROR: accepted');return;}record('Refusal selected');root.querySelectorAll('[role=radio]').forEach(r=>r.setAttribute('aria-checked',r.dataset.refusal));save.disabled=false;};group.append(b);
+    }
+   }
+   const save=control('Enregistrer vos préférences et fermer',()=>{const radios=[...root.querySelectorAll('[role=radio]')];if(radios.every(r=>r.getAttribute('aria-checked')===r.dataset.refusal)){record('Refusal saved');mount.replaceChildren();}else record('ERROR: saved unset consent');});save.disabled=true;
+  });settings.setAttribute('aria-label','Paramétrer mes choix: Configurer vos consentements');mount.append(root);return;
+ }
  if(['german','italian'].includes(scenario)){
   const de=scenario==='german',root=document.createElement('section');root.setAttribute('role','dialog');
   root.innerHTML='<h2>'+(de?'Ihre Datenschutzeinstellungen':'Le tue preferenze sulla riservatezza')+'</h2><p>'+(de?'Wir verwenden Daten für personalisierte Werbung.':'Utilizziamo dati per pubblicità personalizzata.')+'</p>';

@@ -6,9 +6,17 @@
 })(globalThis, () => {
   'use strict';
   const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[’']/g, "'").replace(/\s+/g,' ').trim().replace(/[.!:]+$/,'');
+  const documents=new WeakMap();
+  const controlID=(doc,element)=>{
+    if(!documents.has(doc)) documents.set(doc,{next:0,ids:new WeakMap()});
+    const state=documents.get(doc);
+    if(!state.ids.has(element)) state.ids.set(element,'c'+state.next++);
+    return state.ids.get(element);
+  };
   const providers = [
     ['OneTrust','#onetrust-pc-sdk, #onetrust-banner-sdk'],
     ['Cookiebot','#CybotCookiebotDialog'],
+    ['Didomi','.didomi-popup-container'],
     ['Didomi','#didomi-host'],
     ['TrustArc','#truste-consent-track, #trustarc-consent'],
     ['Sourcepoint','.message-container #notice.message, #sp_message_container'],
@@ -58,13 +66,13 @@
       if(el===doc.body || el===doc.documentElement || !isVisible(el)) continue;
       const text=(el.innerText||el.textContent||'').trim();
       if(!text || text.length>18000) continue;
-      const controls=[...el.querySelectorAll('button, input[type="button"], input[type="submit"], input[type="checkbox"], [role="button"], [role="switch"], [role="checkbox"], [role="tab"], a[href]')];
+      const controls=[...el.querySelectorAll('button, input[type="button"], input[type="submit"], input[type="checkbox"], input[type="radio"], [role="radio"], [role="button"], [role="switch"], [role="checkbox"], [role="tab"], a[href]')];
       if(!controls.length || controls.length>100) continue;
       const candidates=controls.map((element,i)=>{
         const toggle=element.matches('input[type="checkbox"], [role="switch"], [role="checkbox"]');
         const state=element.matches('input') ? (element.indeterminate ? 'mixed' : element.checked) : element.getAttribute('aria-checked')==='mixed' ? 'mixed' : element.getAttribute('aria-checked')==='true' ? true : element.getAttribute('aria-checked')==='false' ? false : null;
         const text=label(element);
-        return {id:`c${i}`,element,label:text,normalized:normalize(text),toggle,state,visible:isVisible(element),disabled:!!element.disabled || element.getAttribute('aria-disabled')==='true'};
+        return {id:controlID(doc,element),element,label:text,text:(element.innerText||element.textContent||element.value||'').trim().slice(0,180),normalized:normalize(text),radio:element.matches('input[type="radio"], [role="radio"]'),toggle,state,visible:isVisible(element),disabled:!!element.disabled || element.getAttribute('aria-disabled')==='true'};
       });
       if(candidates.some(c=>c.visible)) {
         const wall=/[€$£]|\b(payant|paid|subscription|abonnement)\b/i.test(text)&&candidates.some(c=>c.visible && /^(refuser|reject|decline).*\b(abonner|subscribe|subscription)/.test(c.normalized));
@@ -76,13 +84,50 @@
   }
   function usable(c) {
     if(!c || !c.visible || c.disabled || !c.element.isConnected || !c.label) return false;
+    if(c.radio && c.state===true) return false;
+    if(/\p{Sc}/u.test(c.label+' '+c.text)) return false;
     const a=c.element.closest('a[href]');
     if(a && !['','#'].includes(a.getAttribute('href'))) return false;
     if(c.element.matches('input[type="submit"], button[type="submit"]') || (c.element.tagName==='BUTTON' && c.element.closest('form') && !c.element.hasAttribute('type'))) return false;
     return true;
   }
-  function modelCandidates(s) {
-    return s.candidates.filter(c=>usable(c) && c.element.matches('button, input, [role="button"], [role="switch"], [role="checkbox"], [role="tab"]'));
+  function modelCandidates(s, excluded=new WeakSet()) {
+    return s.candidates.filter(c=>!excluded.has(c.element) && usable(c) && c.element.matches('button, input, [role="radio"], [role="button"], [role="switch"], [role="checkbox"], [role="tab"]'));
+  }
+  function modelSaveReady(s) {
+    const toggles=s.candidates.filter(c=>c.toggle), radios=s.candidates.filter(c=>c.radio&&c.visible);
+    if(!toggles.length && !radios.length) return false;
+    if(!toggles.filter(c=>!c.disabled).every(c=>c.visible&&c.state===false)) return false;
+    if(!radios.length) return true;
+    const groups=new Map();
+    for(const c of radios) {
+      const el=c.element;
+      const group=el.closest('[role="radiogroup"], fieldset') || el.getAttribute('aria-describedby') || el.getAttribute('name') || el.parentElement;
+      if(!groups.has(group)) groups.set(group,[]);
+      groups.get(group).push(c);
+    }
+    return [...groups.values()].every(group=>group.length>=2 && group.every(c=>typeof c.state==='boolean') && group.filter(c=>c.state===true).length===1);
+  }
+  function domSnapshot(s) {
+    const escape=value=>String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const controls=new Map(s.candidates.map(c=>[c.element,c]));
+    const walk=node=>{
+      if(node.nodeType===3) return escape(node.textContent.replace(/\s+/g,' ').trim().slice(0,260));
+      if(node.nodeType!==1 || /^(SCRIPT|STYLE|NOSCRIPT|IFRAME|SVG|IMG)$/.test(node.tagName)) return '';
+      if(!s.isVisible(node) && node.ownerDocument.defaultView.getComputedStyle(node).display!=='contents') return '';
+      const c=controls.get(node);
+      if(c) {
+        const role=node.getAttribute('role'),type=node.getAttribute('type');
+        return '<'+node.tagName.toLowerCase()+' data-ce-id="'+c.id+'"'+(role?' role="'+escape(role)+'"':'')+(type?' type="'+escape(type)+'"':'')+' aria-label="'+escape(c.label)+'"'+(typeof c.state==='boolean'?' aria-checked="'+c.state+'"':'')+(c.disabled?' disabled':'')+'>'+escape(c.text)+'</'+node.tagName.toLowerCase()+'>';
+      }
+      if(node.tagName==='INPUT'||node.tagName==='TEXTAREA') return '';
+      const inner=[...node.childNodes].map(walk).filter(Boolean).join(' ');
+      if(!inner) return '';
+      const tag=/^(H[1-6]|P|LABEL|FIELDSET|LEGEND)$/.test(node.tagName)?node.tagName.toLowerCase():'div';
+      const role=node.getAttribute('role') || ([...node.children].filter(child=>controls.get(child)?.radio).length>=2?'radiogroup':null);
+      return tag==='div'&&!role?inner:'<'+tag+(role?' role="'+escape(role)+'"':'')+'>'+inner+'</'+tag+'>';
+    };
+    return walk(s.root).slice(0,3000);
   }
   function readyToSave(s, visited) {
     const toggles=s.candidates.filter(c=>c.toggle);
@@ -99,9 +144,10 @@
       if(!modelCandidates(s).includes(c)) return false;
       const effects={reject:'rejectOptionalCookies',settings:'openConsentSettings',disable:'disableOptionalPurpose',save:'saveNecessaryOnly',accept:'acceptToContinue'};
       if(decision.requiresPaymentOrAccount!==false || effects[decision.action]!==decision.effect) return false;
+      if(c.radio) return decision.action==='reject' && c.state===false;
       if(c.toggle) return decision.action==='disable' && c.state===true;
       if(decision.action==='disable') return false;
-      if(decision.action==='save') return s.candidates.some(x=>x.toggle) && s.candidates.filter(x=>x.toggle&&!x.disabled).every(x=>x.visible&&x.state===false);
+      if(decision.action==='save') return modelSaveReady(s);
       if(decision.action==='accept') return ['acceptanceOnly','subscriptionOrAcceptance'].includes(decision.alternatives);
       return ['reject','settings'].includes(decision.action);
     }
@@ -118,10 +164,10 @@
       default: return false;
     }
   }
-  function choose(s, visited=new Set()) {
+  function choose(s, visited=new Set(), excluded=new WeakSet()) {
     if(!s || !s.rulesEligible) return null;
     for(const action of ['reject','disable','tab','save','settings','accept']) {
-      for(const candidate of s.candidates) if(validate(s,{candidateID:candidate.id,action},visited)) return {action,candidate};
+      for(const candidate of s.candidates) if(!excluded.has(candidate.element) && validate(s,{candidateID:candidate.id,action},visited)) return {action,candidate};
     }
     return null;
   }
@@ -146,5 +192,5 @@
     }
     return {status:'submitted',evidence:'bannerDismissedWithoutStoredProof'};
   }
-  return {normalize,inspect,choose,validate,evidence,visible,readyToSave,modelCandidates};
+  return {normalize,inspect,choose,validate,evidence,visible,readyToSave,modelCandidates,modelSaveReady,domSnapshot};
 });

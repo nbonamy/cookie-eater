@@ -36,7 +36,7 @@ Controlled tests reproduce the same controls and frame teardown. Clicks are reco
 - Verified rejection currently requires fresh Cookiebot category flags. Other flows remain “Requested” unless stronger evidence is added.
 - Unavailable-model behavior was simulated in browser tests; Apple Intelligence was not disabled system-wide for testing.
 - Closed shadow roots, frames without Safari website permission, unsupported language/control labels, and settings that cannot be interpreted safely remain manual.
-- The 0.1.0 universal distribution build passed Apple notarization and stapler validation. Gatekeeper reports Notarized Developer ID. Local development builds also remain available. The app has not been submitted to the App Store.
+- The 0.1.1 universal distribution build passed Apple notarization and stapler validation. Gatekeeper reports Notarized Developer ID. Local development builds also remain available. The app has not been submitted to the App Store.
 
 ## Live multilingual browser checks
 
@@ -44,6 +44,7 @@ Fresh isolated WebKit profiles ran the shipped content engine and the real Swift
 
 | Site | Language | Observed behavior |
 |---|---|---|
+| M6 | French | Opened settings, selected refusal, and saved. Completed in WebKit and Safari. |
 | TF1 | French | Rejected, then confirmed the refusal. Completed in WebKit and Safari. |
 | ZDF | German | Model chose Ablehnen. Completed in WebKit and Safari. |
 | Lidl | German | Model chose ABLEHNEN. Completed in WebKit and Safari. |
@@ -58,4 +59,14 @@ Heise and Stern were also tried. Their unfamiliar settings remain Needs attentio
 
 The AI path validates live DOM identity, visibility, action type, and semantic effects without an English/French label allowlist. Disagreement leaves the banner alone. Model classification is probabilistic; these checks do not establish support for every language or publisher.
 
-Current automated coverage: 25 policy/background tests and 18 controlled WebKit scenarios, plus real native model probes. A replayable live-site probe is available as scripts/test-live.sh.
+Current automated coverage: 33 policy/background tests and 19 controlled WebKit scenarios, plus real native model probes. A replayable live-site probe is available as scripts/test-live.sh.
+
+## DOM-guided fallback
+
+When rules cannot choose another action, the on-device model receives a compact, sanitized consent-dialog DOM with stable control IDs, visible text, radio groups, and checked/disabled states. It chooses one next control and action. Code limits eligible controls and permits saving only after the settings have explicit, complete selections. An independent model assessment checks the selected control's effect; close/cancel controls are not save controls. Retries use fresh sessions and remain bounded by the native and content deadlines.
+
+M6 was tested with empty WebKit profiles and in the installed, Developer ID signed and notarized build 4. Safari's website-data manager confirmed **No Saved Website Data** for m6.fr before the visit. Cookie Eater completed the consent flow automatically and recorded **Requested**, preserving the distinction from stored-category verification. The banner stayed absent on reload with Cookie Eater paused, then automatic operation was restored.
+
+The final fresh-profile live regression passed M6, TF1, ZDF, Lidl, RAI, and Euronics, using the real Swift model. All six remained dismissed on reload with automation paused. Native probes also cover a selected-refusal DOM with a misleading close control and a standalone refusal confirmation that cannot be treated as a settings save.
+
+The 0.1.1 distribution (build 5) contains the same Safari-validated consent engine with updated version metadata. Both universal executables, sandbox entitlements, timestamped signatures, notarization, stapling, and Gatekeeper assessment were checked before publication. The release checks passed all 33 policy/background tests and 19 controlled WebKit scenarios.

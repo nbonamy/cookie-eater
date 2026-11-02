@@ -28,9 +28,9 @@ browser.runtime.onMessage.addListener((message,sender) => {
   if(message.type==='interpret' && (host || ui)) return (async()=>{
     const settings=await config();
     if(!settings.aiEnabled || (host && settings.pausedSites.includes(host)) || modelBusy) return {action:'none',model:modelBusy?'busy':'disabled'};
-    if(typeof message.banner!=='string'||message.banner.length>2000||!Array.isArray(message.candidates)||message.candidates.length>24) return {action:'none'};
+    if(typeof message.banner!=='string'||message.banner.length>2000||(message.canSave!==undefined&&typeof message.canSave!=='boolean')||(message.dom!==undefined&&(typeof message.dom!=='string'||message.dom.length>3000))||!Array.isArray(message.candidates)||message.candidates.length>24) return {action:'none'};
     modelBusy=true;
-    try { return await native({type:'interpret',banner:message.banner,candidates:message.candidates}); }
+    try { return await native({type:'interpret',banner:message.banner,dom:message.dom,canSave:message.canSave,candidates:message.candidates}); }
     finally { modelBusy=false; }
   })();
   if(message.type==='outcome' && host && !sender.tab.incognito) return serial(async()=>{

@@ -1,11 +1,22 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');const vm=require('node:vm');const fs=require('node:fs');
-function setup(){let handler;const data={};const tab={id:7,url:'https://news.example/article?private=true'};let nativeCalls=0;
- const browser={runtime:{getURL:()=> 'safari-web-extension://test/',onMessage:{addListener:fn=>handler=fn},sendNativeMessage:async()=>{nativeCalls++;return {model:'available'};}},tabs:{query:async()=>[tab],sendMessage:async()=>({ok:true})},storage:{local:{get:async keys=>{await new Promise(r=>setTimeout(r,2));return Object.fromEntries((typeof keys==='string'?[keys]:keys).map(k=>[k,data[k]]));},set:async values=>Object.assign(data,values),remove:async key=>{delete data[key];}}}};
+function setup(){let handler;const data={};const tab={id:7,url:'https://news.example/article?private=true'};let nativeCalls=0,lastNative;
+ const browser={runtime:{getURL:()=> 'safari-web-extension://test/',onMessage:{addListener:fn=>handler=fn},sendNativeMessage:async(_app,message)=>{nativeCalls++;lastNative=message;return {model:'available'};}},tabs:{query:async()=>[tab],sendMessage:async()=>({ok:true})},storage:{local:{get:async keys=>{await new Promise(r=>setTimeout(r,2));return Object.fromEntries((typeof keys==='string'?[keys]:keys).map(k=>[k,data[k]]));},set:async values=>Object.assign(data,values),remove:async key=>{delete data[key];}}}};
  vm.runInNewContext(fs.readFileSync('Extension/background.js','utf8'),{browser,URL,setTimeout,clearTimeout,crypto:require('node:crypto').webcrypto});
- return {send:(msg,sender={tab,url:'https://consent.vendor/frame'})=>handler(msg,sender),data,tab,get nativeCalls(){return nativeCalls;},ui:{url:'safari-web-extension://test/popup.html'}};
+ return {send:(msg,sender={tab,url:'https://consent.vendor/frame'})=>handler(msg,sender),data,tab,get nativeCalls(){return nativeCalls;},get lastNative(){return lastNative;},ui:{url:'safari-web-extension://test/popup.html'}};
 }
 test('frames inherit top-site pause; content cannot change settings',async()=>{const b=setup();await b.send({type:'pause',paused:true},b.ui);assert.equal((await b.send({type:'state'})).paused,true);await b.send({type:'pause',paused:false});assert.equal((await b.send({type:'state'})).paused,true);});
 test('concurrent frame outcomes retain every entry, store no URLs or banner text',async()=>{const b=setup();await Promise.all(Array.from({length:12},()=>b.send({type:'outcome',status:'submitted',banner:'secret',url:'https://private/path'})));assert.equal(b.data.history.length,12);assert.equal(b.data.history[0].host,'news.example');assert(!JSON.stringify(b.data).includes('private'));assert(!JSON.stringify(b.data).includes('secret'));});
 test('bounded local history, no private-window history',async()=>{const b=setup();b.data.history=Array(100).fill({host:'old'});await b.send({type:'outcome',status:'verified'});assert.equal(b.data.history.length,100);await b.send({type:'outcome',status:'submitted'},{tab:{...b.tab,incognito:true},url:'https://secret.example'});assert.equal(b.data.history[0].status,'verified');});
 test('paused sites and disabled AI never call native inference',async()=>{const b=setup();await b.send({type:'pause',paused:true},b.ui);await b.send({type:'interpret',banner:'Cookies',candidates:[]});assert.equal(b.nativeCalls,0);await b.send({type:'pause',paused:false},b.ui);await b.send({type:'ai',enabled:false},b.ui);await b.send({type:'interpret',banner:'Cookies',candidates:[]});assert.equal(b.nativeCalls,0);});
 test('a click record is upgraded with verified evidence instead of duplicated',async()=>{const b=setup();const id='00000000-0000-4000-8000-000000000001';await b.send({type:'outcome',id,status:'submitted',evidence:'rejectionClicked'});await b.send({type:'outcome',id,status:'verified',evidence:'cookiebotOptionalCategoriesOff'});assert.equal(b.data.history.length,1);assert.equal(b.data.history[0].status,'verified');});
+
+test('DOM fallback stays bounded, reaches native inference, and never enters history',async()=>{
+ const b=setup(),dom='<div role="dialog">private consent context</div>';
+ await b.send({type:'interpret',banner:'Cookie choices',dom,canSave:true,candidates:[{id:'c0',label:'Essential only',state:'button'}]});
+ assert.equal(b.nativeCalls,1);assert.equal(b.lastNative.dom,dom);assert.equal(b.lastNative.canSave,true);
+ await b.send({type:'interpret',banner:'Cookies',dom:'x'.repeat(3001),candidates:[]});
+ await b.send({type:'interpret',banner:'Cookies',dom:{html:'unsafe'},candidates:[]});
+ assert.equal(b.nativeCalls,1);
+ await b.send({type:'outcome',status:'submitted',dom,banner:'private consent context'});
+ assert(!JSON.stringify(b.data).includes('private consent context'));
+});

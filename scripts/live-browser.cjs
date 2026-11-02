@@ -28,7 +28,7 @@ function bridge(){
   if(msg.type==='interpret'){
    if(readOnly)return {action:'none',model:'disabled'};
    if(modelBusy)return {action:'none',model:'busy'};modelBusy=true;
-   try{const result=await interpret(msg);model.push({frame:new URL(frame.url()).hostname,...result});return result;}finally{modelBusy=false;}
+   try{const result=await interpret(msg);model.push({frame:new URL(frame.url()).hostname,...result,selected:msg.candidates.find(c=>c.id===result.candidateID)?.label});return result;}finally{modelBusy=false;}
   }
  });
  await c.addInitScript({content:`(${bridge.toString()})();document.addEventListener('DOMContentLoaded',()=>{${engine}\n${content}});`});

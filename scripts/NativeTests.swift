@@ -11,7 +11,8 @@ import Darwin
             for input: [String: Any] in [
                 ["type": "interpret"],
                 ["type": "interpret", "banner": String(repeating: "a", count: 2001), "candidates": [["id": "c0", "label": "Reject all"]]],
-                ["type": "interpret", "banner": "Cookies", "candidates": []]
+                ["type": "interpret", "banner": "Cookies", "candidates": []],
+                ["type":"interpret","banner":"Cookies","dom":String(repeating:"x",count:3001),"candidates":[["id":"c0","label":"Reject all"]]]
             ] {
                 let result = await ModelBridge.handle(input)
                 assert(result["action"] as? String == "none")
@@ -40,6 +41,17 @@ import Darwin
                     assert(result["action"] as? String == action && result["candidateID"] as? String == id, name)
                 }
             }
+            let m6 = await ModelBridge.handle(["type":"interpret", "canSave":true, "banner":"Préférences de confidentialité : les radios Refuser sont sélectionnées pour toutes les finalités. Enregistrer est activé.", "dom":"<div role=\"dialog\"><h2>Vos choix de confidentialité</h2><button data-ce-id=\"c3\" aria-label=\"fermer et revenir à la vue de gestion de consentement\">×</button><div role=\"radiogroup\"><button role=\"radio\" aria-checked=\"true\">Refuser</button><button role=\"radio\" aria-checked=\"false\">Accepter</button></div><button data-ce-id=\"c0\">Refuser et payer 5,99€/mois</button><button data-ce-id=\"c1\">Tout accepter</button><button data-ce-id=\"c2\">Enregistrer vos préférences et fermer</button></div>", "candidates":[
+                ["id":"c0", "label":"Refuser et payer 5,99€/mois", "state":"button"],
+                ["id":"c1", "label":"Tout accepter", "state":"button"],
+                ["id":"c2", "label":"Enregistrer vos préférences et fermer", "state":"button"],
+                ["id":"c3", "label":"fermer et revenir à la vue de gestion de consentement", "text":"×", "state":"button"]
+            ]])
+            print("M6 selected refusal DOM: \(m6)")
+            assert(m6["action"] as? String == "save" && m6["candidateID"] as? String == "c2")
+            let confirmation = await ModelBridge.handle(["type":"interpret","banner":"Vous avez refusé les cookies. Confirmez votre refus.","dom":"<div role=\"dialog\"><p>Vous avez refusé les cookies.</p><button data-ce-id=\"c0\">Confirmer votre refus</button><button data-ce-id=\"c1\">Modifier et tout accepter</button></div>","canSave":false,"candidates":[["id":"c0","label":"Confirmer votre refus","state":"button"],["id":"c1","label":"Modifier et tout accepter","state":"button"]]])
+            assert(confirmation["action"] as? String == "reject" && confirmation["candidateID"] as? String == "c0")
+            print("PASS standalone DOM confirmation is rejection, not a settings save")
             print("PASS real French, German, Italian and payment safeguards")
         }
     }

@@ -21,6 +21,10 @@ const engine=fs.readFileSync('Extension/engine.js','utf8'),content=fs.readFileSy
      if(window.__delayInference)await new Promise(r=>setTimeout(r,1200));
      if(window.__busyCount>0){__busyCount--;return {action:'none',model:'busy'};}
      if(window.__unavailable)return {action:'none',model:'unavailable'};
+     const save=msg.candidates.find(c=>c.label==='Enregistrer vos préférences et fermer');
+     if(save&&msg.dom?.includes('aria-checked="true"'))return {action:'save',candidateID:save.id,effect:'saveNecessaryOnly',requiresPaymentOrAccount:false,alternatives:'rejectionAvailable'};
+     const settings=msg.candidates.find(c=>c.label==='Paramétrer mes choix: Configurer vos consentements');
+     if(settings)return {action:'settings',candidateID:settings.id,effect:'openConsentSettings',requiresPaymentOrAccount:false,alternatives:'rejectionAvailable'};
      return {action:'reject',effect:'rejectOptionalCookies',requiresPaymentOrAccount:false,alternatives:'rejectionAvailable',candidateID:msg.candidates.find(c=>['Use essential cookies only','CONFIRMER VOTRE REFUS','Nur erforderliche zulassen','Continua senza accettare'].includes(c.label))?.id||'bogus'};
     }
    }},storage:{onChanged:{addListener:fn=>changes.push(fn)}}};
@@ -30,7 +34,7 @@ const engine=fs.readFileSync('Extension/engine.js','utf8'),content=fs.readFileSy
   await c.addInitScript({content:`(${mockBrowser.toString()})();document.addEventListener('DOMContentLoaded',()=>{${engine}\n${content}});`});
   const p=await c.newPage();
   async function run(scenario){await p.goto(base+scenario);await p.waitForFunction(()=>__finalOutcomes().length>0,{},{timeout:12000});return p.evaluate(()=>({outcomes:__outcomes,clicks:__clicks,modelCalls:__modelCalls}));}
-  for(const scenario of ['direct','french','settings','delayed','model','misleading','stuck','cookieWall','tf1','german','italian']){
+  for(const scenario of ['direct','french','settings','delayed','model','misleading','stuck','cookieWall','tf1','german','italian','m6']){
    const r=await run(scenario);
    assert(!r.clicks.some(x=>x.startsWith('ERROR')),JSON.stringify(r));
    if(scenario==='direct'||scenario==='delayed')assert.equal(r.outcomes[0].status,'verified');
@@ -40,6 +44,7 @@ const engine=fs.readFileSync('Extension/engine.js','utf8'),content=fs.readFileSy
    if(scenario==='misleading'){assert.deepEqual(r.clicks,[]);assert.equal(r.outcomes[0].status,'needsAttention');}
    if(scenario==='cookieWall'){assert.deepEqual(r.clicks,['Accepted to continue']);assert.equal(r.outcomes[0].status,'accepted');assert.equal(r.outcomes[0].evidence,'acceptedToContinue');assert.equal(r.modelCalls,0);}
    if(['german','italian'].includes(scenario)){assert.deepEqual(r.clicks,['Optional purposes refused']);assert.equal(r.outcomes[0].source,'model');assert.equal(r.modelCalls,1);}
+   if(scenario==='m6'){assert.deepEqual(r.clicks,['Settings opened','Refusal selected','Refusal saved']);assert.equal(r.outcomes[0].status,'submitted');assert.equal(r.outcomes[0].source,'model');assert.equal(r.modelCalls,2);}
    if(scenario==='tf1'){assert.deepEqual(r.clicks,['Initial refusal','Refusal confirmed']);assert.equal(r.outcomes[0].status,'submitted');assert.equal(r.outcomes[0].source,'model');assert.equal(r.modelCalls,1);}
    if(scenario==='stuck'){assert.equal(r.clicks.length,1);assert.equal(r.outcomes[0].evidence,'interactionLimit');}
    console.log('PASS WebKit '+scenario);
