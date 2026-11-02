@@ -1,0 +1,25 @@
+{
+  "name": "cookie-eater",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Automatic cookie consent for Safari on Mac, with on-device AI",
+  "scripts": {
+    "test": "node --test tests/*.test.cjs",
+    "test:browser": "node tests/browser.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "^27.2.0",
+    "playwright": "^1.56.1"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nbonamy/cookie-eater.git"
+  },
+  "bugs": {
+    "url": "https://github.com/nbonamy/cookie-eater/issues"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}

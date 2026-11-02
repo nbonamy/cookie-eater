@@ -1,0 +1,20 @@
+build/
+node_modules/
+.DS_Store
+*.xcuserstate
+xcuserdata/
+.impeccable/
+
+# Local credentials, signing material, and release artifacts
+.env
+.env.*
+*.p8
+*.p12
+*.pfx
+*.cer
+*.keychain
+*.keychain-db
+*.mobileprovision
+*.provisionprofile
+local/
+dist/

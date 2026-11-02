@@ -1,0 +1,132 @@
+const {test} = require('node:test');
+const assert = require('node:assert/strict');
+const {JSDOM} = require('jsdom');
+const CE = require('../Extension/engine.js');
+const assessed=(candidateID,action='reject',extra={})=>({candidateID,action,effect:{reject:'rejectOptionalCookies',settings:'openConsentSettings',disable:'disableOptionalPurpose',save:'saveNecessaryOnly',accept:'acceptToContinue'}[action],requiresPaymentOrAccount:false,alternatives:'rejectionAvailable',...extra});
+const page = html => new JSDOM(html, {url:'https://example.com', pretendToBeVisual:true}).window;
+const dialog = inner => `<section role="dialog"><h2>Cookie preferences</h2>${inner}</section>`;
+function view(html) {const w=page(html); return CE.inspect(w.document, {visible: el=>!el.hidden && !el.closest('[hidden]')});}
+test('rejects direct English and French controls', ()=> {
+  for (const text of ['Reject all','Tout refuser','Continuer sans accepter']) {
+    const s=view(dialog(`<button>${text}</button><button>Accept all</button>`));
+    assert.equal(CE.choose(s).action,'reject');
+  }
+});
+test('opens settings when direct rejection is unavailable', ()=> {
+  assert.equal(CE.choose(view(dialog('<button>Manage preferences</button><button>Accept all</button>'))).action,'settings');
+});
+test('never approves misleading or unrelated controls', ()=> {
+  for (const text of ['Do not reject all','Reject all and subscribe','Close','Not now','Allow essential and optional cookies','Save and accept all']) {
+    const s=view(dialog(`<button>${text}</button>`));
+    assert.equal(CE.choose(s),null, text);
+    assert.equal(CE.validate(s,{candidateID:'c0',action:'reject'}),false, text);
+  }
+  assert.equal(view('<article>Cookies recipe <button>Reject all</button></article>'),null);
+});
+test('does not trust provider selectors with misleading labels',()=>{
+  const s=view('<div id="onetrust-banner-sdk">Cookies<button id="onetrust-reject-all-handler">Accept all</button></div>');
+  assert.equal(CE.validate(s,{candidateID:'c0',action:'reject'}),false);
+});
+test('turns off optional and legitimate-interest switches but leaves necessary alone',()=>{
+  const s=view(dialog('<label><input type="checkbox" checked disabled>Necessary</label><label><input type="checkbox" checked>Marketing</label><label><input type="checkbox" checked>Legitimate interest</label><button>Save preferences</button>'));
+  assert.equal(CE.choose(s).action,'disable');
+  assert.match(CE.choose(s).candidate.label,/Marketing/);
+  const next=view(dialog('<label><input type="checkbox" checked disabled>Nécessaires</label><label><input type="checkbox">Intérêt légitime</label><button>Enregistrer mes choix</button>'));
+  assert.equal(CE.choose(next).action,'save');
+});
+test('unknown, hidden or indeterminate options prevent saving',()=>{
+  for (const toggle of ['<label><input type="checkbox" checked>Partners</label>','<label hidden><input type="checkbox" checked>Marketing</label>']) {
+    assert.equal(CE.choose(view(dialog(`${toggle}<button>Save preferences</button>`))),null);
+  }
+});
+test('requires real settings evidence before save',()=>{
+  assert.equal(CE.choose(view(dialog('<button>Save preferences</button>'))),null);
+});
+test('model cannot invent IDs, accept, navigate, or skip enabled switches',()=>{
+  const s=view(dialog('<label><input type="checkbox" checked>Marketing</label><button>Save preferences</button><a href="/privacy">Manage preferences</a><button>Accept all</button>'));
+  for(const d of [{candidateID:'invented',action:'reject'},{candidateID:'c1',action:'save'},{candidateID:'c2',action:'settings'},{candidateID:'c3',action:'reject'}]) assert.equal(CE.validate(s,d),false);
+});
+test('persistence is required for verified outcome, disappearance alone is unverified',()=>{
+  assert.equal(CE.evidence('','',true).status,'submitted');
+  assert.equal(CE.evidence('', 'CookieConsent={necessary:true,preferences:false,statistics:false,marketing:false,method:\'explicit\'}',true).status,'verified');
+  assert.equal(CE.evidence('', 'CookieConsent={necessary:true,preferences:true,statistics:false,marketing:false}',true).status,'submitted');
+  assert.equal(CE.evidence('CookieConsent=x','CookieConsent=x',true).status,'submitted');
+  assert.equal(CE.evidence('','',false).status,'needsAttention');
+});
+test('prioritizes legitimate interest and vendor tabs before saving',()=>{
+  const s=view(dialog('<label><input type="checkbox">Marketing</label><button role="tab">Legitimate interest</button><button>Save preferences</button>'));
+  assert.equal(CE.choose(s).action,'tab');
+  assert.equal(CE.choose(s,new Set(['legitimate interest'])).action,'save');
+});
+test('ambiguous or malformed consent storage is never verified',()=>{
+  for(const value of ["{necessary:true,preferences:false,statistics:false,marketing:false,method:'explicit',marketing:true}","{necessary:true,preferences:false,statistics:false,marketing:false}","{necessary:true,preferences:false,statistics:false,marketing:'false',method:'explicit'}", "{necessary:true,preferences:false,statistics:false,marketing:false,method:'explicit',broken}"]){
+    assert.equal(CE.evidence('','CookieConsent='+encodeURIComponent(value),true,'Cookiebot').status,'submitted');
+  }
+});
+test('model can interpret a safe unfamiliar rejection phrase but never override policy',()=>{
+  const s=view(dialog('<button>Use essential cookies only</button><button>Allow all cookies</button>'));
+  assert.equal(CE.choose(s),null);
+  assert.equal(CE.validate(s,assessed('c0'),new Set(),true),true);
+  assert.equal(CE.validate(s,{candidateID:'c1',action:'reject'},new Set(),true),false);
+});
+test('Libération-style subscribe-or-consent wall chooses acceptance without subscribing',()=>{
+  const s=view('<div class="publisher-overlay"><button>Refuser et s’abonner pour 1€ →</button><div><h2>Vos choix de cookies</h2><p>Accepter les cookies ou vous abonner.</p><button>En savoir plus</button><button>Accepter et continuer</button></div></div>');
+  assert.equal(s.cookieWall,true);assert.equal(CE.choose(s).action,'accept');assert.equal(CE.choose(s).candidate.label,'Accepter et continuer');
+  assert.equal(CE.validate(s,{candidateID:'c0',action:'reject'},new Set(),true),false);
+});
+test('a free reject control takes priority over a subscription offer',()=>{
+  const s=view(dialog('<button>Refuser et s’abonner pour 1€</button><button>Tout refuser</button><button>Accepter et continuer</button>'));
+  assert.equal(s.cookieWall,false);assert.equal(CE.choose(s).candidate.label,'Tout refuser');
+});
+
+test('accept fallback cannot target subscription, payment, or an ambiguous accept control',()=>{
+  const s=view(dialog('<button>Refuser et s’abonner pour 1€</button><button>Accepter et continuer</button><button>Accept and pay</button>'));
+  assert.equal(CE.validate(s,{candidateID:'c0',action:'accept'}),false);
+  assert.equal(CE.validate(s,{candidateID:'c1',action:'accept'}),true);
+  assert.equal(CE.validate(s,{candidateID:'c2',action:'accept'}),false);
+  const free=view(dialog('<button>Tout refuser</button><button>Accepter et continuer</button>'));
+  assert.equal(CE.validate(free,{candidateID:'c1',action:'accept'}),false);
+});
+
+test('a sole explicit cookie acceptance is a fallback, while settings and unknown alternatives block it',()=>{
+  const only=view(dialog('<button>Accept all</button>'));
+  assert.equal(CE.choose(only).action,'accept');
+  const settings=view(dialog('<button>Accept all</button><button>Manage preferences</button>'));
+  assert.equal(CE.choose(settings).action,'settings');
+  const unknown=view(dialog('<button>Accept all</button><button>No thanks</button>'));
+  assert.equal(CE.choose(unknown),null);
+  assert.equal(CE.validate(unknown,{candidateID:'c0',action:'accept'}),false);
+});
+
+test('TF1 refusal confirmation wins over acceptance and Premium',()=>{
+  const s=view(dialog('<p>Vous avez fait le choix de refuser les cookies.</p><button>En savoir plus</button><button>CONFIRMER VOTRE REFUS</button><button>MODIFIER ET TOUT ACCEPTER</button><button>PARAMÉTRER VOS CHOIX</button><a href="/premium">S’ABONNER À PREMIUM</a>'));
+  assert.equal(CE.choose(s),null);
+  assert.equal(CE.validate(s,assessed('c1'),new Set(),true),true);
+  assert.equal(CE.validate(s,{candidateID:'c2',action:'reject'},new Set(),true),false);
+  for(const label of ['Confirmer votre refus et vous abonner','Confirmer votre refus et tout accepter','Ne pas confirmer votre refus']){
+    const misleading=view(dialog(`<button>${label}</button><button>Modifier et tout accepter</button>`));
+    assert.equal(CE.validate(misleading,{candidateID:'c0',action:'reject'},new Set(),true),false);
+  }
+});
+
+test('model decisions use effects rather than language-specific labels',()=>{
+  for(const label of ['ABLEHNUNG BESTÄTIGEN','Conferma il rifiuto','拒否を確認','رفض ملفات تعريف الارتباط']){
+    const s=view(`<section role="dialog"><h2>Datenschutz</h2><button>${label}</button></section>`);
+    assert.equal(CE.validate(s,assessed('c0'),new Set(),true),true);
+    assert.equal(CE.validate(s,assessed('c0','reject',{requiresPaymentOrAccount:true}),new Set(),true),false);
+    assert.equal(CE.validate(s,assessed('c0','reject',{effect:'acceptToContinue'}),new Set(),true),false);
+    assert.equal(CE.validate(s,assessed('c0','accept',{alternatives:'rejectionAvailable'}),new Set(),true),false);
+  }
+});
+
+test('discovers Sourcepoint consent frames without dialog roles or English labels',()=>{
+  const s=view('<div class="message-container"><div id="notice" class="message type-modal"><h2>Datenschutzeinstellungen</h2><button>Alle ablehnen</button><button>Zustimmen</button></div></div>');
+  assert.equal(s?.provider,'Sourcepoint');
+  assert.equal(s.candidates.length,2);
+});
+
+test('model cannot click explanatory links inside consent dialogs',()=>{
+  const s=view(dialog('<a href="#">Speichern von oder Zugriff auf Informationen auf einem Endgerät</a><button>Einstellungen</button>'));
+  assert.equal(CE.validate(s,assessed('c0'),new Set(),true),false);
+  assert.equal(CE.validate(s,assessed('c1','settings'),new Set(),true),true);
+});

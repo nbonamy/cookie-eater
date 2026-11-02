@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cookie Eater</title><link rel="stylesheet" href="popup.css"></head>
+<body>
+<header><img src="icon.png" width="34" height="34" alt=""><h1>Cookie Eater</h1></header>
+<main>
+<section class="site"><h2 id="host">This website</h2><p id="outcome" aria-live="polite">Checking this site…</p><label class="switch-row"><span>Active on this site</span><input id="active" type="checkbox" role="switch" disabled></label><button id="retry" disabled>Try again</button></section>
+<section><label class="switch-row"><span>Use Apple Intelligence</span><input id="ai" type="checkbox" role="switch"></label><p id="model">Checking availability…</p></section>
+<section class="activity"><div class="section-heading"><h2>Recent activity</h2><button id="clear" class="text-button">Clear</button></div><ul id="history"></ul></section>
+<details><summary>Connection check</summary><button id="probe">Test local inference</button><p id="diagnostic" aria-live="polite"></p></details>
+<p id="message" role="status"></p>
+</main>
+<footer>On your Mac. Without an account.</footer>
+<script src="popup.js"></script></body></html>

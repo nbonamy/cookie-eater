@@ -1,0 +1,559 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 110;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0F5769CAE14D7FC666B831E3 = {isa = PBXBuildFile; fileRef = 4EA5ABBAC814D15F0DC3C17C; };
+		B49C3E9D27B4DF28BB91AAB8 = {isa = PBXBuildFile; fileRef = EE5892CB82C8625ED1F5E433; };
+		AAAAAAAAAAAAAAAAAAAAAAA1 = {isa = PBXBuildFile; fileRef = AAAAAAAAAAAAAAAAAAAAAAA2; };
+		8DCF95593098E31D007C7241 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCF95583098E31D007C7241 /* AppDelegate.swift */; };
+		8DCF95653098E31D007C7241 /* WelcomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCF95643098E31D007C7241 /* WelcomeView.swift */; };
+		8DCF956A3098E31E007C7241 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8DCF95693098E31E007C7241 /* Assets.xcassets */; };
+		8DCF95713098E31E007C7241 /* Cookie Eater Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8DCF95703098E31E007C7241 /* Cookie Eater Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		8DCF95763098E31E007C7241 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8DCF95753098E31E007C7241 /* SafariWebExtensionHandler.swift */; };
+		8DCF95883098E31E007C7241 /* popup.js in Resources */ = {isa = PBXBuildFile; fileRef = 8DCF95823098E31E007C7241 /* popup.js */; };
+		8DCF95893098E31E007C7241 /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = 8DCF95833098E31E007C7241 /* background.js */; };
+		8DCF958A3098E31E007C7241 /* popup.html in Resources */ = {isa = PBXBuildFile; fileRef = 8DCF95843098E31E007C7241 /* popup.html */; };
+		8DCF958B3098E31E007C7241 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = 8DCF95853098E31E007C7241 /* manifest.json */; };
+		8DCF958C3098E31E007C7241 /* engine.js in Resources */ = {isa = PBXBuildFile; fileRef = 8DCF95863098E31E007C7241 /* engine.js */; };
+		8DCF958D3098E31E007C7241 /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = 8DCF95873098E31E007C7241 /* content.js */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8DCF95723098E31E007C7241 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8DCF954D3098E31D007C7241 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8DCF956F3098E31E007C7241;
+			remoteInfo = "Cookie Eater Extension";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8DCF957D3098E31E007C7241 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			dstPath = "";
+			dstSubfolder = PlugIns;
+			files = (
+				8DCF95713098E31E007C7241 /* Cookie Eater Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		4EA5ABBAC814D15F0DC3C17C = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon.png; path = ../../Extension/icon.png; sourceTree = "<group>"; };
+		EE5892CB82C8625ED1F5E433 = {isa = PBXFileReference; lastKnownFileType = text.css; name = popup.css; path = ../../Extension/popup.css; sourceTree = "<group>"; };
+		AAAAAAAAAAAAAAAAAAAAAAA2 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ModelBridge.swift; path = ../../Native/ModelBridge.swift; sourceTree = "<group>"; };
+		8DCF95553098E31D007C7241 /* Cookie Eater.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Cookie Eater.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8DCF95583098E31D007C7241 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		8DCF95643098E31D007C7241 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeView.swift; sourceTree = "<group>"; };
+		8DCF95693098E31E007C7241 = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8DCF956B3098E31E007C7241 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8DCF95753098E31E007C7241 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		8DCF95773098E31E007C7241 = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8DCF95703098E31E007C7241 = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Cookie Eater Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		8DCF95823098E31E007C7241 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = popup.js; path = ../../Extension/popup.js; sourceTree = "<group>"; };
+		8DCF95833098E31E007C7241 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = background.js; path = ../../Extension/background.js; sourceTree = "<group>"; };
+		8DCF95843098E31E007C7241 = {isa = PBXFileReference; lastKnownFileType = text.html; name = popup.html; path = ../../Extension/popup.html; sourceTree = "<group>"; };
+		8DCF95853098E31E007C7241 = {isa = PBXFileReference; lastKnownFileType = text.json; name = manifest.json; path = ../../Extension/manifest.json; sourceTree = "<group>"; };
+		8DCF95863098E31E007C7241 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = engine.js; path = ../../Extension/engine.js; sourceTree = "<group>"; };
+		8DCF95873098E31E007C7241 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = content.js; path = ../../Extension/content.js; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8DCF95523098E31D007C7241 = {isa = PBXFrameworksBuildPhase; files = (); };
+		8DCF956D3098E31E007C7241 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		8DCF954C3098E31D007C7241 = {
+			isa = PBXGroup;
+			children = (
+				8DCF95573098E31D007C7241 /* Cookie Eater */,
+				8DCF95743098E31E007C7241 /* Cookie Eater Extension */,
+				8DCF95563098E31D007C7241 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8DCF95563098E31D007C7241 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8DCF95553098E31D007C7241 /* Cookie Eater.app */,
+				8DCF95703098E31E007C7241 /* Cookie Eater Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8DCF95573098E31D007C7241 /* Cookie Eater */ = {
+			isa = PBXGroup;
+			children = (
+				8DCF95583098E31D007C7241 /* AppDelegate.swift */,
+				8DCF95643098E31D007C7241 /* WelcomeView.swift */,
+				8DCF95693098E31E007C7241 /* Assets.xcassets */,
+				8DCF956B3098E31E007C7241 /* Info.plist */,
+			);
+			path = "Cookie Eater";
+			sourceTree = "<group>";
+		};
+		8DCF95743098E31E007C7241 /* Cookie Eater Extension */ = {
+			isa = PBXGroup;
+			children = (
+				8DCF95813098E31E007C7241 /* Resources */,
+				8DCF95753098E31E007C7241 /* SafariWebExtensionHandler.swift */,
+				AAAAAAAAAAAAAAAAAAAAAAA2,
+				8DCF95773098E31E007C7241 /* Info.plist */,
+			);
+			path = "Cookie Eater Extension";
+			sourceTree = "<group>";
+		};
+		8DCF95813098E31E007C7241 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				8DCF95823098E31E007C7241 /* popup.js */,
+				4EA5ABBAC814D15F0DC3C17C,
+				EE5892CB82C8625ED1F5E433,
+				8DCF95833098E31E007C7241 /* background.js */,
+				8DCF95843098E31E007C7241 /* popup.html */,
+				8DCF95853098E31E007C7241 /* manifest.json */,
+				8DCF95863098E31E007C7241 /* engine.js */,
+				8DCF95873098E31E007C7241 /* content.js */,
+			);
+			name = Resources;
+			path = "Cookie Eater Extension";
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8DCF95543098E31D007C7241 /* Cookie Eater */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8DCF957E3098E31E007C7241 /* Build configuration list for PBXNativeTarget "Cookie Eater" */;
+			buildPhases = (
+				8DCF95513098E31D007C7241 /* Sources */,
+				8DCF95523098E31D007C7241 /* Frameworks */,
+				8DCF95533098E31D007C7241 /* Resources */,
+				8DCF957D3098E31E007C7241 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8DCF95733098E31E007C7241 /* PBXTargetDependency */,
+			);
+			name = "Cookie Eater";
+			productName = "Cookie Eater";
+			productReference = 8DCF95553098E31D007C7241 /* Cookie Eater.app */;
+			productType = "com.apple.product-type.application";
+		};
+		8DCF956F3098E31E007C7241 /* Cookie Eater Extension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8DCF957A3098E31E007C7241 /* Build configuration list for PBXNativeTarget "Cookie Eater Extension" */;
+			buildPhases = (
+				8DCF956C3098E31E007C7241 /* Sources */,
+				8DCF956D3098E31E007C7241 /* Frameworks */,
+				8DCF956E3098E31E007C7241 /* Resources */,
+			);
+			buildRules = (
+			);
+			name = "Cookie Eater Extension";
+			productName = "Cookie Eater Extension";
+			productReference = 8DCF95703098E31E007C7241 /* Cookie Eater Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8DCF954D3098E31D007C7241 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2710;
+				LastUpgradeCheck = 2710;
+				TargetAttributes = {
+					8DCF95543098E31D007C7241 = {
+						CreatedOnToolsVersion = 27.1;
+					};
+					8DCF956F3098E31E007C7241 = {
+						CreatedOnToolsVersion = 27.1;
+					};
+				};
+			};
+			buildConfigurationList = 8DCF95503098E31D007C7241 /* Build configuration list for PBXProject "Cookie Eater" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 8DCF954C3098E31D007C7241;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 8DCF95563098E31D007C7241 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8DCF95543098E31D007C7241 /* Cookie Eater */,
+				8DCF956F3098E31E007C7241 /* Cookie Eater Extension */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8DCF95533098E31D007C7241 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				8DCF956A3098E31E007C7241 /* Assets.xcassets in Resources */,
+			);
+		};
+		8DCF956E3098E31E007C7241 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+				8DCF958D3098E31E007C7241 /* content.js in Resources */,
+				8DCF958B3098E31E007C7241 /* manifest.json in Resources */,
+				8DCF95893098E31E007C7241 /* background.js in Resources */,
+				8DCF958A3098E31E007C7241 /* popup.html in Resources */,
+				8DCF95883098E31E007C7241 /* popup.js in Resources */,
+				0F5769CAE14D7FC666B831E3,
+				B49C3E9D27B4DF28BB91AAB8,
+				8DCF958C3098E31E007C7241 /* engine.js in Resources */,
+			);
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8DCF95513098E31D007C7241 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				8DCF95653098E31D007C7241 /* WelcomeView.swift in Sources */,
+				8DCF95593098E31D007C7241 /* AppDelegate.swift in Sources */,
+			);
+		};
+		8DCF956C3098E31E007C7241 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				8DCF95763098E31E007C7241 /* SafariWebExtensionHandler.swift in Sources */,
+				AAAAAAAAAAAAAAAAAAAAAAA1,
+			);
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8DCF95733098E31E007C7241 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8DCF956F3098E31E007C7241 /* Cookie Eater Extension */;
+			targetProxy = 8DCF95723098E31E007C7241 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		8DCF95783098E31E007C7241 /* Debug configuration for PBXProject "Cookie Eater" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		8DCF95793098E31E007C7241 /* Release configuration for PBXProject "Cookie Eater" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		8DCF957B3098E31E007C7241 /* Debug configuration for PBXNativeTarget "Cookie Eater Extension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				ENABLE_APP_SANDBOX = YES;
+				CODE_SIGN_ENTITLEMENTS = ../Native/Sandbox.entitlements;
+				ENABLE_HARDENED_RUNTIME = YES;
+
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Cookie Eater Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Cookie Eater";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nbonamy.CookieEater.Extension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		8DCF957C3098E31E007C7241 /* Release configuration for PBXNativeTarget "Cookie Eater Extension" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 3;
+				ENABLE_APP_SANDBOX = YES;
+				CODE_SIGN_ENTITLEMENTS = ../Native/Sandbox.entitlements;
+				ENABLE_HARDENED_RUNTIME = YES;
+
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Cookie Eater Extension/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Cookie Eater";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nbonamy.CookieEater.Extension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		8DCF957F3098E31E007C7241 /* Debug configuration for PBXNativeTarget "Cookie Eater" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 3;
+				ENABLE_APP_SANDBOX = YES;
+				CODE_SIGN_ENTITLEMENTS = ../Native/Sandbox.entitlements;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
+
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Cookie Eater/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Cookie Eater";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				INFOPLIST_KEY_NSViewGestureRecognizerIsExclusive = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nbonamy.CookieEater;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		8DCF95803098E31E007C7241 /* Release configuration for PBXNativeTarget "Cookie Eater" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 3;
+				ENABLE_APP_SANDBOX = YES;
+				CODE_SIGN_ENTITLEMENTS = ../Native/Sandbox.entitlements;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = NO;
+
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Cookie Eater/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Cookie Eater";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				INFOPLIST_KEY_NSViewGestureRecognizerIsExclusive = NO;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.nbonamy.CookieEater;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8DCF95503098E31D007C7241 /* Build configuration list for PBXProject "Cookie Eater" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8DCF95783098E31E007C7241 /* Debug configuration for PBXProject "Cookie Eater" */,
+				8DCF95793098E31E007C7241 /* Release configuration for PBXProject "Cookie Eater" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		8DCF957A3098E31E007C7241 /* Build configuration list for PBXNativeTarget "Cookie Eater Extension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8DCF957B3098E31E007C7241 /* Debug configuration for PBXNativeTarget "Cookie Eater Extension" */,
+				8DCF957C3098E31E007C7241 /* Release configuration for PBXNativeTarget "Cookie Eater Extension" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		8DCF957E3098E31E007C7241 /* Build configuration list for PBXNativeTarget "Cookie Eater" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8DCF957F3098E31E007C7241 /* Debug configuration for PBXNativeTarget "Cookie Eater" */,
+				8DCF95803098E31E007C7241 /* Release configuration for PBXNativeTarget "Cookie Eater" */,
+			);
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 8DCF954D3098E31D007C7241 /* Project object */;
+	validationLevel = 1;
+}

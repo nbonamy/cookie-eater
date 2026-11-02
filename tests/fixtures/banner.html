@@ -1,0 +1,42 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Cookie Eater · Test kitchen</title>
+<style>body{font:17px -apple-system,sans-serif;margin:60px;color:#26251f;background:#f9f7f1}h1{font-size:32px}section{background:white;padding:28px;max-width:540px;border:1px solid #b9b4a5;border-radius:16px;margin:40px 0}button{font:inherit;padding:10px 16px;margin:6px;border-radius:8px;border:1px solid #666;background:#fff}label{display:block;margin:15px 0}#result{font-weight:600;color:#245442}a{color:#245442}</style>
+<h1>Cookie Eater test kitchen</h1><p id="scenario"></p><p id="result">Waiting for Cookie Eater…</p><main id="mount"></main>
+<nav><a href="?case=direct">Direct</a> · <a href="?case=settings">Settings + legitimate interest</a> · <a href="?case=french">Français</a> · <a href="?case=delayed">Delayed</a> · <a href="?case=model">On-device interpretation</a> · <a href="?case=misleading">Misleading</a> · <a href="?case=frame">Frame</a></nav>
+<script>
+let scenario=new URLSearchParams(location.search).get('case')||'direct';
+const mount=document.querySelector('#mount'),result=document.querySelector('#result');
+document.querySelector('#scenario').textContent=scenario;
+window.__clicks=[];
+function record(text){__clicks.push(text);result.textContent=text;}
+function rejected(){record('Optional cookies rejected');document.cookie="CookieConsent="+encodeURIComponent("{necessary:true,preferences:false,statistics:false,marketing:false,method:'explicit',stamp:'"+Date.now()+"'}")+'; path=/';mount.replaceChildren();if(scenario==='vanishing')parent.postMessage('consent-frame-finished','*');}
+addEventListener('message',event=>{const frame=mount.querySelector('iframe');if(frame&&event.source===frame.contentWindow&&event.data==='consent-frame-finished')frame.remove();});
+function render(){
+ if(scenario==='frame'||scenario==='removedFrame'){mount.innerHTML='<iframe title="Cookie consent frame" src="http://localhost:'+location.port+'/?case='+(scenario==='removedFrame'?'vanishing':'direct')+'" style="width:650px;height:350px;border:0"></iframe>';return;}
+ if(['german','italian'].includes(scenario)){
+  const de=scenario==='german',root=document.createElement('section');root.setAttribute('role','dialog');
+  root.innerHTML='<h2>'+(de?'Ihre Datenschutzeinstellungen':'Le tue preferenze sulla riservatezza')+'</h2><p>'+(de?'Wir verwenden Daten für personalisierte Werbung.':'Utilizziamo dati per pubblicità personalizzata.')+'</p>';
+  const accept=document.createElement('button');accept.textContent=de?'Alle akzeptieren':'Accetta tutti';accept.onclick=()=>record('ERROR: accepted');
+  const reject=document.createElement('button');reject.textContent=de?'Nur erforderliche zulassen':'Continua senza accettare';reject.onclick=()=>{record('Optional purposes refused');mount.replaceChildren();};root.append(accept,reject);mount.append(root);return;
+ }
+ const french=scenario==='french';
+ const root=document.createElement('section');root.id=scenario==='direct'||scenario==='delayed'?'CybotCookiebotDialog':'cookie-consent';root.setAttribute('role','dialog');root.setAttribute('aria-label','Cookie preferences');
+ root.innerHTML='<h2>'+(french?'Vos choix de cookies':'Your cookie choices')+'</h2><p>'+(french?'Nous utilisons des cookies et des traceurs.':'We use cookies to measure visits and personalize ads.')+'</p>';
+ function button(text,callback){const b=document.createElement('button');b.type='button';b.textContent=text;b.onclick=callback;root.append(b);return b;}
+ button(french?'Tout accepter':scenario==='cookieWall'?'Accepter et continuer':'Accept all',()=>{if(scenario==='cookieWall'){record('Accepted to continue');mount.replaceChildren();}else record('ERROR: accepted');});
+ if(scenario==='cookieWall'){button('Refuser et s’abonner pour 1€ →',()=>record('ERROR: subscription'));button('En savoir plus',()=>record('ERROR: unvalidated information control'));}
+ else if(scenario==='tf1')button('Tout refuser',()=>{record('Initial refusal');root.innerHTML='<h2>Validation de vos choix & conditions d’accès à nos contenus</h2><p>Vous avez fait le choix de refuser les cookies.</p>';button('En savoir plus',()=>record('ERROR: unrelated control'));button('CONFIRMER VOTRE REFUS',()=>{record('Refusal confirmed');mount.replaceChildren();});button('MODIFIER ET TOUT ACCEPTER',()=>record('ERROR: accepted'));button('PARAMÉTRER VOS CHOIX',()=>record('ERROR: unnecessary settings'));button('S’ABONNER À PREMIUM',()=>record('ERROR: subscription'));});
+ else if(scenario==='settings')button('Manage preferences',()=>{
+   record('Settings opened');root.replaceChildren();root.innerHTML='<h2>Cookie preferences</h2><label><input type="checkbox" checked disabled>Strictly necessary</label><label><input type="checkbox" checked>Marketing</label><label><input type="checkbox" checked>Analytics</label>';
+   const tab=button('Legitimate interest',()=>{record('Legitimate interest opened');tab.setAttribute('aria-selected','true');if(!root.querySelector('#interest')){const l=document.createElement('label');l.innerHTML='<input id="interest" type="checkbox" checked>Legitimate interest';root.prepend(l);}});tab.setAttribute('role','tab');
+   button('Save preferences',()=>{
+    const options=[...root.querySelectorAll('input:not([disabled])')];
+    if(options.every(i=>!i.checked)&&root.querySelector('#interest')){record('Saved: optional cookies and legitimate interest off');mount.replaceChildren();}else record('ERROR: saved enabled consent');
+   });
+ });
+ else if(scenario==='misleading')button('Reject all and subscribe',()=>record('ERROR: subscribed'));
+ else if(scenario==='stuck')button('Reject all',()=>record('Rejection ignored by site'));
+ else button(french?'Tout refuser':scenario==='model'?'Use essential cookies only':'Reject all',rejected);
+ mount.append(root);
+}
+if(scenario==='delayed')setTimeout(render,1600);else render();
+</script></html>
